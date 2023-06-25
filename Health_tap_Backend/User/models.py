@@ -109,7 +109,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 ###############################
     objects = CustomUserManager()
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['']
+    # REQUIRED_FIELDS = ['email']
 # 'first_name', 'last_name','phone'
 
     class Meta:
@@ -128,7 +128,7 @@ class Patient(models.Model):
 class Doctor(models.Model):
     user = models.OneToOneField(User,
                                 on_delete=models.CASCADE, related_name='Doctor')
-    specialization = models.ManyToManyField(
+    specialization = models.ForeignKey(
         Specialization, on_delete=models.CASCADE, related_name='Specialization')
     profLicenseNo = models.CharField(
         max_length=6, validators=[validate_profLicenseNum])

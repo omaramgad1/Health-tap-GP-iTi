@@ -24,7 +24,9 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    #####################
     'jazzmin',
+    #####################
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -32,7 +34,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     #####################
-
     'drf_yasg',
     'rest_framework',
     "phonenumber_field",
@@ -41,6 +42,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     #######################
+    'User',
+    'Specialization'
 
 ]
 
@@ -181,7 +184,7 @@ REST_FRAMEWORK = {
 }
 
 #### Custom User Model #####
-# AUTH_USER_MODEL = "user_app.user"
+AUTH_USER_MODEL = "User.user"
 
 
 ### JWT Authorization Settings ###
