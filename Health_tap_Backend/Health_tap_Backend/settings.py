@@ -4,6 +4,9 @@ from pathlib import Path
 import environ
 from datetime import timedelta
 from .jazmin import JAZZMIN_SETTINGS
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -203,3 +206,9 @@ AUTH_USER_MODEL = "User.user"
 # STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
 
 JAZZMIN_SETTINGS = JAZZMIN_SETTINGS
+
+cloudinary.config( 
+  cloud_name = "das9oh9bs", 
+  api_key = "649543211737858", 
+  api_secret = "Bz6GeXk4KuBOjMXCU4rkyR20A_U",
+)

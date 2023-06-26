@@ -4,12 +4,30 @@ from Specialization.api.serializers import SpecializationSerializer
 from Specialization.models import Specialization
 from django.db import transaction
 from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ValidationError
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name',  'password' , 'confirm_password' ,'email', 'date_of_birth', 'phone', 'national_id', 'profileImgUrl', 'created', 'updated']
+        fields = ['id', 'first_name', 'last_name', 'gender' , 'password' , 'confirm_password' ,'email', 'date_of_birth', 'phone', 'national_id', 'profileImgUrl', 'created', 'updated']
 
+    def validate(self,data):
+        if User.objects.filter(email=data['email']).exists():
+            raise ValidationError('This email is already exists!')
+        
+        if 'phone' not in data:
+            raise serializers.ValidationError('Phone number is required.')
+        
+        if User.objects.filter(phone=data['phone']).exists():
+            raise serializers.ValidationError('Phone number already exists.')
+        
+        if data['password'] != data['confirm_password']:
+            raise ValidationError("Passwords don't match")
+        
+        if len(data['password']) > 16 or len(data['confirm_password']) > 16:
+            raise ValidationError("Password should not be more than 16 characters")
+        
+        return data   
 
 class PatientSerializer(serializers.ModelSerializer):
     user = UserSerializer()
