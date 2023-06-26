@@ -7,5 +7,6 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('User.api.urls')),
+    path('specializations', include('Specialization.api.urls')),
 ]
 urlpatterns += staticfiles_urlpatterns()

@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from rest_framework import generics
+from Specialization.models import Specialization
+from Specialization.api.serializers import SpecializationSerializer
 
-# Create your views here.
+class SpecializationListCreateView(generics.ListCreateAPIView):
+    queryset = Specialization.objects.all()
+    serializer_class = SpecializationSerializer
