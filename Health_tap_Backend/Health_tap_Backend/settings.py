@@ -62,6 +62,15 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'Health_tap_Backend.urls'
 
+### JWT Authorization Settings ###
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    # "Bearer <Token>"
+}
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -187,19 +196,7 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = "User.user"
 
 
-### JWT Authorization Settings ###
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME':   timedelta(days=36500),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
-    'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
-    'VERIFYING_KEY': None,
-    'AUTH_HEADER_TYPES': ("Bearer",),
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-    'TOKEN_TYPE_CLAIM': 'token_type',
-}
+
 
 
 # STRIPE_PUBLIC_KEY = env('STRIPE_PUBLIC_KEY')

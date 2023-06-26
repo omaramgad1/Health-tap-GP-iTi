@@ -93,6 +93,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     national_id = models.CharField(max_length=14)                           
     profileImgUrl = models.ImageField(
         upload_to='profileImages/', blank=True)
+    confirm_password = models.CharField()
+
     # validators=[validate_image]
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -115,6 +117,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = 'User'
         verbose_name_plural = 'Users'
 
+    def clean(self):
+        super().clean()
+        if self.password != self.confirm_password:
+            raise ValidationError('Passwords do not match')
+        
     def __str__(self):
         return self.first_name
 

@@ -3,11 +3,12 @@ from User.models import Patient, Doctor, User
 from Specialization.api.serializers import SpecializationSerializer
 from Specialization.models import Specialization
 from django.db import transaction
+from django.contrib.auth.hashers import make_password
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'phone', 'national_id', 'profileImgUrl', 'created', 'updated']
+        fields = ['id', 'first_name', 'last_name',  'password' , 'confirm_password' ,'email', 'date_of_birth', 'phone', 'national_id', 'profileImgUrl', 'created', 'updated']
 
 
 class PatientSerializer(serializers.ModelSerializer):
