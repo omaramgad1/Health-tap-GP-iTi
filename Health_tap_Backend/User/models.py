@@ -27,19 +27,19 @@ def validate_date_of_birth(value):
         raise ValidationError('You must be at least 12 years old to register.')
 
 
-def validate_egypt_national_id(value):
-    if not isinstance(value, str):
-        raise ValidationError('National ID must be a string')
-    if len(value) != 14:
-        raise ValidationError('National ID must be 14 digits')
-    if not value.isdigit():
-        raise ValidationError('National ID must consist of digits only')
-    if int(value[0]) % 2 == 0:
-        if not value[7:9] in ('01', '03', '05', '07', '09', '11'):
-            raise ValidationError('Invalid national ID')
-    else:
-        if not value[7:9] in ('02', '04', '06', '08', '10', '12'):
-            raise ValidationError('Invalid national ID')
+# def validate_egypt_national_id(value):
+#     if not isinstance(value, str):
+#         raise ValidationError('National ID must be a string')
+#     if len(value) != 14:
+#         raise ValidationError('National ID must be 14 digits')
+#     if not value.isdigit():
+#         raise ValidationError('National ID must consist of digits only')
+#     if int(value[0]) % 2 == 0:
+#         if not value[7:9] in ('01', '03', '05', '07', '09', '11'):
+#             raise ValidationError('Invalid national ID')
+#     else:
+#         if not value[7:9] in ('02', '04', '06', '08', '10', '12'):
+#             raise ValidationError('Invalid national ID')
 
 
 class CustomUserManager(BaseUserManager):
@@ -90,8 +90,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_of_birth = models.DateField(
         null=True, blank=True, validators=[validate_date_of_birth])
     phone = PhoneNumberField(region='EG', unique=True)
-    national_id = models.CharField(max_length=14, validators=[
-                                   validate_egypt_national_id])
+    national_id = models.CharField(max_length=14)                           
     profileImgUrl = models.ImageField(
         upload_to='profileImages/', blank=True)
     # validators=[validate_image]
@@ -124,6 +123,8 @@ class Patient(models.Model):
     user = models.OneToOneField(User,
                                 on_delete=models.CASCADE, related_name='Patient')
 
+    def __str__(self):
+        return f'{self.user.first_name} {self.user.last_name}'
 
 class Doctor(models.Model):
     user = models.OneToOneField(User,
