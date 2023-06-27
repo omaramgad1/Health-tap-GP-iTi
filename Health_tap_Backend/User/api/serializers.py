@@ -5,7 +5,8 @@ from django.db import transaction
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
-
+from City.models import City
+from District.models import District
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,27 +51,39 @@ class PatientSerializer(serializers.ModelSerializer):
 class DoctorSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     specialization = SpecializationSerializer()
+    city_id = serializers.IntegerField(write_only=True)
+    district_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Doctor
-        fields = ['id', 'user', 'specialization', 'profLicenseNo']
+        fields = ['id', 'user', 'specialization', 'profLicenseNo', 'city_id', 'district_id']
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         specialization_data = validated_data.pop('specialization')
         specialization_name = specialization_data.get('name')
+        city_id = validated_data.pop('city_id')
+        district_id = validated_data.pop('district_id')
 
         with transaction.atomic():
             try:
-                specialization = Specialization.objects.get(
-                    name=specialization_name)
+                specialization = Specialization.objects.get(name=specialization_name)
             except Specialization.DoesNotExist:
-                raise serializers.ValidationError(
-                    f'Specialization "{specialization_name}" does not exist')
+                raise serializers.ValidationError(f'Specialization "{specialization_name}" does not exist')
+
+            try:
+                city = City.objects.get(id=city_id)
+            except City.DoesNotExist:
+                raise serializers.ValidationError(f'City with id "{city_id}" does not exist')
+
+            try:
+                district = District.objects.get(id=district_id, city=city)
+            except District.DoesNotExist:
+                raise serializers.ValidationError(f'District with id "{district_id}" does not exist in the given city')
 
             user = User.objects.create(**user_data)
             doctor = Doctor.objects.create(
-                user=user, specialization=specialization, **validated_data)
+                user=user, specialization=specialization, city=city, district=district, **validated_data)
 
         return doctor
 

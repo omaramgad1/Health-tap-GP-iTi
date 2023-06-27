@@ -8,7 +8,8 @@ from django.utils.translation import gettext_lazy as _
 from Specialization.models import Specialization
 import cloudinary.api
 from cloudinary.models import CloudinaryField, CloudinaryResource
-
+from City.models import City
+from District.models import District
 
 def validate_profLicenseNum(value):
     # Regular expression pattern to match the desired pattern
@@ -167,6 +168,9 @@ class Doctor(models.Model):
         Specialization, on_delete=models.CASCADE, related_name='Specialization')
     profLicenseNo = models.CharField(
         max_length=6, validators=[validate_profLicenseNum])
+    city = models.OneToOneField( City, on_delete=models.CASCADE, related_name='doctorCity')
+    district = models.OneToOneField( District, on_delete=models.CASCADE, related_name='doctorDistrict')
+    address = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name} ({self.profLicenseNo})'
