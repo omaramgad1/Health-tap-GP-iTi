@@ -2,11 +2,9 @@ import re
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from phonenumber_field.modelfields import PhoneNumberField
-from PIL import Image
 from django.core.exceptions import ValidationError
 from datetime import date, timedelta
 from django.utils.translation import gettext_lazy as _
-from Specialization.models import Specialization
 
 
 def validate_profLicenseNum(value):
@@ -90,8 +88,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_of_birth = models.DateField(
         null=True, blank=True, validators=[validate_date_of_birth])
     phone = PhoneNumberField(region='EG', unique=True)
-    national_id = models.CharField(max_length=14, validators=[
-                                   validate_egypt_national_id])
+    # , validators=[validate_egypt_national_id]
+    national_id = models.CharField(max_length=14)
     profileImgUrl = models.ImageField(
         upload_to='profileImages/', blank=True)
     # validators=[validate_image]
@@ -103,13 +101,21 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     # this field we inherit from PermissionsMixin.
     is_superuser = models.BooleanField(default=False)
-#################################
+
+    GENDER_CHOICES = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+    )
+
+    gender = models.CharField(
+        max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
+# #################################
     is_patient = models.BooleanField(default=False)
     is_doctor = models.BooleanField(default=False)
-###############################
+# ###############################
     objects = CustomUserManager()
     USERNAME_FIELD = 'email'
-    # REQUIRED_FIELDS = ['email']
+    REQUIRED_FIELDS = []
 # 'first_name', 'last_name','phone'
 
     class Meta:
@@ -118,20 +124,3 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.first_name
-
-
-class Patient(models.Model):
-    user = models.OneToOneField(User,
-                                on_delete=models.CASCADE, related_name='Patient')
-
-
-class Doctor(models.Model):
-    user = models.OneToOneField(User,
-                                on_delete=models.CASCADE, related_name='Doctor')
-    specialization = models.ForeignKey(
-        Specialization, on_delete=models.CASCADE, related_name='Specialization')
-    profLicenseNo = models.CharField(
-        max_length=6, validators=[validate_profLicenseNum])
-
-    def __str__(self):
-        return f'{self.user.first_name} {self.user.last_name} ({self.profLicenseNo})'

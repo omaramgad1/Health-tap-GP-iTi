@@ -42,9 +42,12 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     #######################
+    'Specialization',
+    'Doctor',
+    'Patient',
     'User',
-    'Specialization'
-
+    'City',
+    'District',
 ]
 
 
