@@ -46,8 +46,8 @@ INSTALLED_APPS = [
     'django_filters',
     #######################
     'Specialization',
-    'Doctor',
-    'Patient',
+    # 'Doctor',
+    # 'Patient',
     'User',
     'City',
     'District',
@@ -161,6 +161,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+cloudinary.config(
+    cloud_name=env('CLOUD_NAME'),
+    api_key=env('API_KEY'),
+    api_secret=env('API_SECRET'),
+
+
+)
+
+
 # Cloudinary settings
 # MEDIA_URL = '/media/'
 # DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
@@ -206,9 +216,3 @@ AUTH_USER_MODEL = "User.user"
 # STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
 
 JAZZMIN_SETTINGS = JAZZMIN_SETTINGS
-
-cloudinary.config(
-    cloud_name="das9oh9bs",
-    api_key="649543211737858",
-    api_secret="Bz6GeXk4KuBOjMXCU4rkyR20A_U",
-)
