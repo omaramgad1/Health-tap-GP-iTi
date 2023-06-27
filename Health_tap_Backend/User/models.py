@@ -5,6 +5,9 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.core.exceptions import ValidationError
 from datetime import date, timedelta
 from django.utils.translation import gettext_lazy as _
+from Specialization.models import Specialization
+import cloudinary.api
+from cloudinary.models import CloudinaryField, CloudinaryResource
 
 
 def validate_profLicenseNum(value):
@@ -26,18 +29,14 @@ def validate_date_of_birth(value):
 
 
 def validate_egypt_national_id(value):
-    if not isinstance(value, str):
-        raise ValidationError('National ID must be a string')
     if len(value) != 14:
-        raise ValidationError('National ID must be 14 digits')
+        raise ValidationError('National ID must be 14 digits long')
     if not value.isdigit():
         raise ValidationError('National ID must consist of digits only')
-    if int(value[0]) % 2 == 0:
-        if not value[7:9] in ('01', '03', '05', '07', '09', '11'):
-            raise ValidationError('Invalid national ID')
-    else:
-        if not value[7:9] in ('02', '04', '06', '08', '10', '12'):
-            raise ValidationError('Invalid national ID')
+    if value[0] not in ['2', '3', '5']:
+        raise ValidationError("Invalid Egyptian National ID number.")
+    if value[1] not in ['0', '1', '2', '3', '4', '9']:
+        raise ValidationError("Invalid Egyptian National ID number.")
 
 
 class CustomUserManager(BaseUserManager):
@@ -80,6 +79,25 @@ class CustomUserManager(BaseUserManager):
         return self._create_user(email, password, password2,  **extra_fields)
 
 
+def validateImage(image):
+    if not isinstance(image, CloudinaryResource):
+        # The image is not a Cloudinary resource, so we can't validate it
+        return
+
+    info = cloudinary.api.resource(image.public_id)
+    file_size = info.get("bytes")
+    if not file_size:
+        raise ValidationError('Failed to get image size.')
+
+    print(file_size)
+    if file_size > 2 * 1024 * 1024:
+        raise ValidationError('Image size should be less than 2MB.')
+
+    file_extension = image.format.lower()
+    if file_extension not in ['png', 'jpg', 'jpeg']:
+        raise ValidationError('Only PNG, JPG, and JPEG images are allowed.')
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     # Abstractbaseuser has password, last_login, is_active by default
     first_name = models.CharField(max_length=255)
@@ -88,10 +106,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_of_birth = models.DateField(
         null=True, blank=True, validators=[validate_date_of_birth])
     phone = PhoneNumberField(region='EG', unique=True)
-    # , validators=[validate_egypt_national_id]
-    national_id = models.CharField(max_length=14)
-    profileImgUrl = models.ImageField(
-        upload_to='profileImages/', blank=True)
+    national_id = models.CharField(max_length=14, validators=[
+                                   validate_egypt_national_id])
+    profileImgUrl = CloudinaryField('images', validators=[validateImage])
+    confirm_password = models.CharField()
+    gender = models.CharField(
+        choices=[('M', 'Male'), ('F', 'Female'), ('male', 'm'), ('female', 'f')])
+
     # validators=[validate_image]
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -122,5 +143,30 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = 'User'
         verbose_name_plural = 'Users'
 
+    def clean(self):
+        super().clean()
+        if self.password != self.confirm_password:
+            raise ValidationError('Passwords do not match')
+
     def __str__(self):
         return self.first_name
+
+
+class Patient(models.Model):
+    user = models.OneToOneField(User,
+                                on_delete=models.CASCADE, related_name='Patient')
+
+    def __str__(self):
+        return f'{self.user.first_name} {self.user.last_name}'
+
+
+class Doctor(models.Model):
+    user = models.OneToOneField(User,
+                                on_delete=models.CASCADE, related_name='Doctor')
+    specialization = models.ForeignKey(
+        Specialization, on_delete=models.CASCADE, related_name='Specialization')
+    profLicenseNo = models.CharField(
+        max_length=6, validators=[validate_profLicenseNum])
+
+    def __str__(self):
+        return f'{self.user.first_name} {self.user.last_name} ({self.profLicenseNo})'

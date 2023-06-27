@@ -1,6 +1,10 @@
 from django.contrib import admin
+<<<<<<< HEAD
 from django.contrib.auth.admin import UserAdmin
 from .models import User
+=======
+from User.models import User, Doctor, Patient
+>>>>>>> aa1979b0426c63620f331414a9dd63dd206c0d3a
 # Register your models here.
 
 

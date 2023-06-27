@@ -4,6 +4,9 @@ from pathlib import Path
 import environ
 from datetime import timedelta
 from .jazmin import JAZZMIN_SETTINGS
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -64,6 +67,15 @@ MIDDLEWARE = [
 
 
 ROOT_URLCONF = 'Health_tap_Backend.urls'
+
+### JWT Authorization Settings ###
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    # "Bearer <Token>"
+}
 
 TEMPLATES = [
     {
@@ -190,22 +202,13 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = "User.user"
 
 
-### JWT Authorization Settings ###
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME':   timedelta(days=36500),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
-    'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
-    'VERIFYING_KEY': None,
-    'AUTH_HEADER_TYPES': ("Bearer",),
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-    'TOKEN_TYPE_CLAIM': 'token_type',
-}
-
-
 # STRIPE_PUBLIC_KEY = env('STRIPE_PUBLIC_KEY')
 # STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
 
 JAZZMIN_SETTINGS = JAZZMIN_SETTINGS
+
+cloudinary.config(
+    cloud_name="das9oh9bs",
+    api_key="649543211737858",
+    api_secret="Bz6GeXk4KuBOjMXCU4rkyR20A_U",
+)
