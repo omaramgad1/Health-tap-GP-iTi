@@ -1,4 +1,5 @@
 from django.urls import path
+<<<<<<< HEAD
 from .views import *
 
 urlpatterns = [
@@ -12,4 +13,10 @@ urlpatterns = [
     path('doctor/appointments/', list_doctor_appointments,
          name='list_doctor_appointments'),
     path('doctor/appointments/add/', add_appointment, name='add_appointment'),
+=======
+from .views import AppointmentView
+
+urlpatterns = [
+    path('/', AppointmentView.as_view(), name='appointments'),
+>>>>>>> 0f81a7b9d7a86ae0df43850cc435562c83c7403e
 ]

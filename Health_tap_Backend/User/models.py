@@ -12,7 +12,6 @@ from City.models import City
 from District.models import District
 
 def validate_profLicenseNum(value):
-    # Regular expression pattern to match the desired pattern
     pattern = r'^[02468]{2}[13579]{2}\d{2}$'
 
     # Check if the value matches the pattern
@@ -99,6 +98,17 @@ def validateImage(image):
         raise ValidationError('Only PNG, JPG, and JPEG images are allowed.')
 
 
+def validate_gender(value):
+    if value not in ['m', 'male', 'f', 'female' , 'M' , "Male",'F' , 'Female']:
+        raise ValidationError('Invalid gender value')
+    
+
+def validate_password(value):
+    if len(value) < 8:
+        raise ValidationError('Password must be at least 8 characters long')
+    if not any(c.isdigit() for c in value):
+        raise ValidationError('Password must contain at least one digit')
+    
 class User(AbstractBaseUser, PermissionsMixin):
     # Abstractbaseuser has password, last_login, is_active by default
     first_name = models.CharField(max_length=255)
@@ -110,9 +120,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     national_id = models.CharField(max_length=14, validators=[
                                    validate_egypt_national_id])
     profileImgUrl = CloudinaryField('images', validators=[validateImage])
-    confirm_password = models.CharField()
-    gender = models.CharField(
-        choices=[('M', 'Male'), ('F', 'Female'), ('male', 'm'), ('female', 'f')])
+    password = models.CharField(validators=[validate_password], max_length=128)
+    confirm_password = models.CharField(max_length=128)
+    gender = models.CharField(max_length=6, validators=[validate_gender])
 
     # validators=[validate_image]
     created = models.DateTimeField(auto_now_add=True)
@@ -124,13 +134,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     # this field we inherit from PermissionsMixin.
     is_superuser = models.BooleanField(default=False)
 
-    GENDER_CHOICES = (
-        ('M', 'Male'),
-        ('F', 'Female'),
-    )
-
-    gender = models.CharField(
-        max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
 # #################################
     is_patient = models.BooleanField(default=False)
     is_doctor = models.BooleanField(default=False)

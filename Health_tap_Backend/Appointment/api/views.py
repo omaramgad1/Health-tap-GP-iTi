@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -73,3 +74,12 @@ def list_available_appointments(request):
         date__range=[today, max_date], status='A')
     serializer = AppointmentSerializer(appointments, many=True)
     return Response(serializer.data)
+=======
+from rest_framework import generics
+from Appointment.models import Appointment
+from .serializers import AppointmentSerializer
+
+class AppointmentView(generics.ListCreateAPIView):
+    queryset = Appointment.objects.all()
+    serializer_class = AppointmentSerializer
+>>>>>>> 0f81a7b9d7a86ae0df43850cc435562c83c7403e

@@ -48,7 +48,7 @@ class PatientSerializer(serializers.ModelSerializer):
         user = User.objects.create(**user_data)
         patient = Patient.objects.create(user=user, **validated_data)
         return patient
-
+    
 
 class DoctorSerializer(serializers.ModelSerializer):
     user = UserSerializer()
