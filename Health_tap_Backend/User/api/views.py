@@ -64,9 +64,9 @@ class LoginView(APIView):
         email = request.data.get('email')
         password = request.data.get('password')
 
-        
+       
         user = User.objects.filter(email=email).first()
-        
+
         if user is None:
             return Response(data={
                 'message': 'Invalid Email or Password'
@@ -77,7 +77,7 @@ class LoginView(APIView):
                 'message': 'User account is disabled'
             }, status=status.HTTP_401_UNAUTHORIZED)
 
-        if password != user.password :
+        if not check_password(password, user.password):
             return Response(data={
                 'message': 'Invalid Email or Password'
             }, status=status.HTTP_401_UNAUTHORIZED)
