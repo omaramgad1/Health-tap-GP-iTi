@@ -484,6 +484,6 @@ INSERT INTO "District_district" ("city_id", "name_ar", "name_en") VALUES
 
 class Migration(migrations.Migration):
     initial = True
-    dependencies = [ ('District', '0001_initial'),]
+    dependencies = [        ('District', '0001_initial'),    ]
 
     operations = [        migrations.RunSQL(insert_sql),    ]
