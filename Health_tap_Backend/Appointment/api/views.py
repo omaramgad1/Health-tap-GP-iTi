@@ -24,3 +24,8 @@ def appointment_detailes(request, id):
     return Response(serializer)
 
 
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+
+def add_appointment(request):
+    pass
