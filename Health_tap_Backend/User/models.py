@@ -119,7 +119,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = PhoneNumberField(region='EG', unique=True)
     national_id = models.CharField(max_length=14, validators=[
                                    validate_egypt_national_id])
-    profileImgUrl = CloudinaryField('images', validators=[validateImage])
+    # profileImgUrl = CloudinaryField('images', validators=[validateImage])
     password = models.CharField(validators=[validate_password], max_length=128)
     confirm_password = models.CharField(max_length=128)
     gender = models.CharField(max_length=6, validators=[validate_gender])

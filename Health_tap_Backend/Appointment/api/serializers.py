@@ -46,7 +46,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             print(appointment.end_time())
             # Do something with `appointment`
             print(appointment.date, appointment.start_time, appointment.duration)
-            if overlapping_appointments.exists() and appointment.end_time() >= start_time:
+            if overlapping_appointments.exists() and appointment.end_time() > start_time:
                 raise serializers.ValidationError(
                     'This appointment overlaps with another appointment.')
 
