@@ -48,7 +48,7 @@ class PatientSerializer(serializers.ModelSerializer):
         user = User.objects.create(**user_data)
         patient = Patient.objects.create(user=user, **validated_data)
         return patient
-    
+
 
 class DoctorSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -61,7 +61,7 @@ class DoctorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Doctor
         fields = ['id', 'user', 'specialization',
-                  'profLicenseNo', 'city_id', 'district_id']
+                  'profLicenseNo', 'city_id', 'district_id', 'appointments']
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')

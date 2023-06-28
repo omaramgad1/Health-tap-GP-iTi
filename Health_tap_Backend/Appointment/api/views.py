@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -15,7 +14,8 @@ from django.utils import timezone
 @permission_classes([IsAuthenticated])
 def add_appointment(request):
     doctor = get_object_or_404(Doctor, user=request.user)
-    serializer = AppointmentSerializer(data=request.data)
+    serializer = AppointmentSerializer(
+        data=request.data, context={'doctor': doctor})
     if serializer.is_valid():
         appointment = serializer.save(doctor=doctor)
         return Response(AppointmentSerializer(appointment).data, status=status.HTTP_201_CREATED)
@@ -31,12 +31,12 @@ def list_doctor_appointments(request):
     return Response(serializer.data)
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def list_all_appointments(request):
-    appointments = Appointment.objects.all()
-    serializer = AppointmentSerializer(appointments, many=True)
-    return Response(serializer.data)
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def list_all_appointments(request):
+#     appointments = Appointment.objects.all()
+#     serializer = AppointmentSerializer(appointments, many=True)
+#     return Response(serializer.data)
 
 
 @api_view(['PUT'])
@@ -74,12 +74,14 @@ def list_available_appointments(request):
         date__range=[today, max_date], status='A')
     serializer = AppointmentSerializer(appointments, many=True)
     return Response(serializer.data)
-=======
-from rest_framework import generics
-from Appointment.models import Appointment
-from .serializers import AppointmentSerializer
 
-class AppointmentView(generics.ListCreateAPIView):
-    queryset = Appointment.objects.all()
-    serializer_class = AppointmentSerializer
->>>>>>> 0f81a7b9d7a86ae0df43850cc435562c83c7403e
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_reserved_appointments(request):
+    today = timezone.localdate()
+    max_date = today + timezone.timedelta(days=6)
+    appointments = Appointment.objects.filter(
+        date__range=[today, max_date], status='R')
+    serializer = AppointmentSerializer(appointments, many=True)
+    return Response(serializer.data)
