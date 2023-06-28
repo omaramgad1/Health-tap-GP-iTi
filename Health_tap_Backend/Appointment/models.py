@@ -14,7 +14,7 @@ def validate_date_range(value):
 
 def validate_time_range(value):
     if value < time(hour=9) or value > time(hour=23):
-        raise ValidationError('Time must be between 9:00 AM and 5:00 PM')
+        raise ValidationError('Time must be between 9:00 AM and 11:00 PM')
 
 
 class Appointment(models.Model):
