@@ -36,6 +36,11 @@ class Doctor(User):
     address = models.CharField(max_length=255, null=True, blank=True)
     objects = DoctorManager()
 
+    
+    def clean(self):
+        super().clean()
+        validate_profLicenseNum(self.profLicenseNo)
+        
     def __str__(self):
         return f'{self.first_name} {self.last_name} ({self.profLicenseNo}) @Doctor'
 

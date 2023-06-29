@@ -112,7 +112,14 @@ def validate_password(value):
         raise ValidationError('Password must be at least 8 characters long')
     if not any(c.isdigit() for c in value):
         raise ValidationError('Password must contain at least one digit')
-    
+
+def validate_phone_number(value):
+    pattern =r'^(\+201|00201|01)?(0|1|2)[0-9]{8}$'
+    if not re.match(pattern, value):
+        raise ValidationError('Invalid phone number format.')
+        # +2 01033022410
+        # 01033022410
+        
 class User(AbstractBaseUser, PermissionsMixin):
     # Abstractbaseuser has password, last_login, is_active by default
     first_name = models.CharField(max_length=255)
@@ -120,7 +127,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(db_index=True, unique=True, max_length=254)
     date_of_birth = models.DateField(
         null=True, blank=True, validators=[validate_date_of_birth])
-    phone = PhoneNumberField(region='EG', unique=True)
+    phone = models.CharField(max_length=15 , validators=[validate_phone_number], unique=True)
     national_id = models.CharField(max_length=14, unique=True , validators=[
                                    validate_egypt_national_id])
     profileImgUrl = CloudinaryField('images', validators=[validateImage])

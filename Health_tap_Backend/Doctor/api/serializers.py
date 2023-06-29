@@ -1,18 +1,33 @@
 
 from rest_framework import serializers
 from ..models import Doctor
+import re
+from django.core.exceptions import ValidationError
+
+
+def validate_profLicenseNum(value):
+    pattern = r'^[02468]\d[13579]{2}\d{2}$'
+    match = re.match(pattern, value)
+    if match is None:
+        raise ValidationError("profession License Number Invalid!.")
 
 
 class DoctorRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
-
+    
     class Meta:
         model = Doctor
         fields = ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'phone', 'national_id', 'profileImgUrl',
                   'password', 'confirm_password', 'gender', 'specialization', 'profLicenseNo', 'city', 'district', 'address']
 
+    
     def validate(self, data):
+        
+        try:
+            validate_profLicenseNum(data['profLicenseNo'])
+        except ValidationError as error:
+            raise serializers.ValidationError(str(error))
         
         if len(data['password']) < 8:
             raise serializers.ValidationError('Password must be at least 8 characters long')
@@ -21,6 +36,8 @@ class DoctorRegistrationSerializer(serializers.ModelSerializer):
         
         if data['password'] != data['confirm_password']:
             raise serializers.ValidationError("Passwords do not match.")
+        
+
         return data
 
     def create(self, validated_data):

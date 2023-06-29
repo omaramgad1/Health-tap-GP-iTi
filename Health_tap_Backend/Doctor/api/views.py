@@ -59,7 +59,21 @@ class LoginView(APIView):
         response = {
             'message': 'Login Successfully',
             'tokens': tokens,
-            'is_doctor': doctor.is_doctor
+            'is_doctor': doctor.is_doctor,
+            "doctor_id": doctor.id,
+            "doctor_first_name" : doctor.first_name,
+            "doctor_last_name" : doctor.last_name,
+            "doctor_email":doctor.email,
+            'doctor_date_of_birth':doctor.date_of_birth,
+            "doctor_phone":doctor.phone,
+            "doctor_national_id":doctor.national_id,
+            "doctor_gender": doctor.gender,
+            "doctor_specialization":doctor.specialization.name,
+            "doctor_profLicenseNo":doctor.profLicenseNo,
+            "doctor_city":doctor.city.name_ar,
+            "doctor_district":doctor.district.name_ar,
+            "doctor_address":doctor.address   
         }
+    
 
         return Response(data=response, status=status.HTTP_200_OK)

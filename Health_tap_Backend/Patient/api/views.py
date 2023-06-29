@@ -59,7 +59,15 @@ class LoginView(APIView):
         response = {
             'message': 'Login Successfully',
             'tokens': tokens,
-            'is_patient': patient.is_patient
+            'is_patient': patient.is_patient,
+            "patient_id": patient.id,
+            "patient_first_name" : patient.first_name,
+            "patient_last_name" : patient.last_name,
+            "patient_email":patient.email,
+            'patient_date_of_birth':patient.date_of_birth,
+            "patient_phone":patient.phone,
+            "patient_national_id":patient.national_id,
+            "patient_gender": patient.gender,
         }
 
         return Response(data=response, status=status.HTTP_200_OK)
