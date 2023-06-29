@@ -1,5 +1,5 @@
 from django.db import models
-from User.models import Doctor
+from Doctor.models import Doctor
 from django.core.exceptions import ValidationError
 from datetime import datetime, timedelta, time
 from django.utils import timezone

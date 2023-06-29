@@ -11,32 +11,7 @@ from cloudinary.models import CloudinaryField, CloudinaryResource
 from City.models import City
 from District.models import District
 
-def validate_profLicenseNum(value):
-    pattern = r'^[02468]{2}[13579]{2}\d{2}$'
 
-    # Check if the value matches the pattern
-    if re.match(pattern, value) == False:
-        raise ValidationError("profession License Number Invalid.")
-
-
-def validate_date_of_birth(value):
-    today = date.today()
-    age_limit = timedelta(days=365*18)
-    if value > today:
-        raise ValidationError('Date of birth cannot be in the future.')
-    elif today - value < age_limit:
-        raise ValidationError('You must be at least 12 years old to register.')
-
-
-def validate_egypt_national_id(value):
-    if len(value) != 14:
-        raise ValidationError('National ID must be 14 digits long')
-    if not value.isdigit():
-        raise ValidationError('National ID must consist of digits only')
-    if value[0] not in ['2', '3', '5']:
-        raise ValidationError("Invalid Egyptian National ID number.")
-    if value[1] not in ['0', '1', '2', '3', '4', '9']:
-        raise ValidationError("Invalid Egyptian National ID number.")
 
 
 class CustomUserManager(BaseUserManager):
@@ -78,6 +53,32 @@ class CustomUserManager(BaseUserManager):
 
         return self._create_user(email, password, password2,  **extra_fields)
 
+def validate_profLicenseNum(value):
+    pattern = r'^[02468]{2}[13579]{2}\d{2}$'
+
+    # Check if the value matches the pattern
+    if re.match(pattern, value) == False:
+        raise ValidationError("profession License Number Invalid.")
+
+
+def validate_date_of_birth(value):
+    today = date.today()
+    age_limit = timedelta(days=365*18)
+    if value > today:
+        raise ValidationError('Date of birth cannot be in the future.')
+    elif today - value < age_limit:
+        raise ValidationError('You must be at least 12 years old to register.')
+
+
+def validate_egypt_national_id(value):
+    if len(value) != 14:
+        raise ValidationError('National ID must be 14 digits long')
+    if not value.isdigit():
+        raise ValidationError('National ID must consist of digits only')
+    if value[0] not in ['2', '3', '5']:
+        raise ValidationError("Invalid Egyptian National ID number.")
+    if value[1] not in ['0', '1', '2', '3', '4', '9']:
+        raise ValidationError("Invalid Egyptian National ID number.")
 
 def validateImage(image):
     if not isinstance(image, CloudinaryResource):
@@ -119,7 +120,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = PhoneNumberField(region='EG', unique=True)
     national_id = models.CharField(max_length=14, validators=[
                                    validate_egypt_national_id])
-    # profileImgUrl = CloudinaryField('images', validators=[validateImage])
+    profileImgUrl = CloudinaryField('images', validators=[validateImage])
     password = models.CharField(validators=[validate_password], max_length=128)
     confirm_password = models.CharField(max_length=128)
     gender = models.CharField(max_length=6, validators=[validate_gender])
@@ -134,9 +135,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # this field we inherit from PermissionsMixin.
     is_superuser = models.BooleanField(default=False)
 
-# #################################
-    is_patient = models.BooleanField(default=False)
-    is_doctor = models.BooleanField(default=False)
+
 # ###############################
     objects = CustomUserManager()
     USERNAME_FIELD = 'email'
@@ -156,24 +155,24 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.first_name
 
 
-class Patient(models.Model):
-    user = models.OneToOneField(User,
-                                on_delete=models.CASCADE, related_name='Patient')
+# class Patient(models.Model):
+#     user = models.OneToOneField(User,
+#                                 on_delete=models.CASCADE, related_name='Patient')
 
-    def __str__(self):
-        return f'{self.user.first_name} {self.user.last_name}'
+#     def __str__(self):
+#         return f'{self.user.first_name} {self.user.last_name}'
 
 
-class Doctor(models.Model):
-    user = models.OneToOneField(User,
-                                on_delete=models.CASCADE, related_name='Doctor')
-    specialization = models.ForeignKey(
-        Specialization, on_delete=models.CASCADE, related_name='Specialization')
-    profLicenseNo = models.CharField(
-        max_length=6, validators=[validate_profLicenseNum])
-    city = models.OneToOneField( City, on_delete=models.CASCADE, related_name='doctorCity')
-    district = models.OneToOneField( District, on_delete=models.CASCADE, related_name='doctorDistrict')
-    address = models.CharField(max_length=255, null=True, blank=True)
+# class Doctor(models.Model):
+#     user = models.OneToOneField(User,
+#                                 on_delete=models.CASCADE, related_name='Doctor')
+#     specialization = models.ForeignKey(
+#         Specialization, on_delete=models.CASCADE, related_name='Specialization')
+#     profLicenseNo = models.CharField(
+#         max_length=6, validators=[validate_profLicenseNum])
+#     city = models.OneToOneField( City, on_delete=models.CASCADE, related_name='doctorCity')
+#     district = models.OneToOneField( District, on_delete=models.CASCADE, related_name='doctorDistrict')
+#     address = models.CharField(max_length=255, null=True, blank=True)
 
-    def __str__(self):
-        return f'{self.user.first_name} {self.user.last_name} ({self.profLicenseNo})'
+#     def __str__(self):
+#         return f'{self.user.first_name} {self.user.last_name} ({self.profLicenseNo})'

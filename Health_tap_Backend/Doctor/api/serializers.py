@@ -1,20 +1,24 @@
+
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from User.api.serializers import UserSerializer
 from ..models import Doctor
 
 
-class DoctorSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+class DoctorRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = Doctor
-        fields = ['user', 'specialization', 'profLicenseNo']
+        fields = ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'phone', 'national_id', 'profileImgUrl',
+                  'password', 'confirm_password', 'gender', 'specialization', 'profLicenseNo', 'city', 'district', 'address']
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Passwords do not match.")
+        return data
 
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user_serializer = UserSerializer(data=user_data)
-        if user_serializer.is_valid():
-            user = user_serializer.save(is_doctor=True)
-            doctor = Doctor.objects.create(user=user, **validated_data)
-            return doctor
+        del validated_data['confirm_password']
+        doctor = Doctor.objects.create_doctor(**validated_data)
+        return doctor
+
