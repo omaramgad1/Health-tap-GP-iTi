@@ -28,17 +28,27 @@ def add_appointment(request):
 @permission_classes([IsAuthenticated])
 def list_doctor_appointments(request):
     doctor = get_object_or_404(Doctor, user=request.user)
-    appointments = doctor.appointments.all()
+    now = timezone.localtime()
+    tz = pytz.timezone('Africa/Cairo')
+    now = now.astimezone(tz)
+    current_date = now.date()
+    appointments = doctor.appointments.filter(date__gte=current_date)
+
     serializer = AppointmentSerializer(appointments, many=True)
     return Response(serializer.data)
 
 
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def list_all_appointments(request):
-#     appointments = Appointment.objects.all()
-#     serializer = AppointmentSerializer(appointments, many=True)
-#     return Response(serializer.data)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_doctor_history_appointments(request):
+    doctor = get_object_or_404(Doctor, user=request.user)
+    now = timezone.localtime()
+    tz = pytz.timezone('Africa/Cairo')
+    now = now.astimezone(tz)
+    appointments = doctor.appointments.filter(date__lt=now.date())
+
+    serializer = AppointmentSerializer(appointments, many=True)
+    return Response(serializer.data)
 
 
 @api_view(['PUT'])
@@ -79,7 +89,10 @@ def delete_appointment(request, appointment_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_available_appointments(request):
-    today = timezone.localdate()
+    now = timezone.localtime()
+    tz = pytz.timezone('Africa/Cairo')
+    now = now.astimezone(tz)
+    today = now.date()
     max_date = today + timezone.timedelta(days=6)
     appointments = Appointment.objects.filter(
         date__range=[today, max_date], status='A')
@@ -90,7 +103,10 @@ def list_available_appointments(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_reserved_appointments(request):
-    today = timezone.localdate()
+    now = timezone.localtime()
+    tz = pytz.timezone('Africa/Cairo')
+    now = now.astimezone(tz)
+    today = now.date()
     max_date = today + timezone.timedelta(days=6)
     appointments = Appointment.objects.filter(
         date__range=[today, max_date], status='R')
@@ -103,10 +119,8 @@ def list_reserved_appointments(request):
 def get_available_appointments(request):
     # Get the `doctor` object from the request user
     doctor = get_object_or_404(Doctor, user=request.user)
-
     # Get the current date and time in the server's timezone
     now = timezone.localtime()
-
     # Convert the current date and time to the doctor's timezone
     tz = pytz.timezone('Africa/Cairo')
     now = now.astimezone(tz)
@@ -151,10 +165,14 @@ def get_reserved_appointments(request):
 def count_available_reserved_appointments(request):
     today = timezone.localdate()
     max_date = today + timezone.timedelta(days=6)
+    count_T_A = Appointment.objects.filter(
+        date=today, status='A').count()
+    count_T_R = Appointment.objects.filter(
+        date=today, status='R').count()
     count_A = Appointment.objects.filter(
         date__range=[today, max_date], status='A').count()
 
     count_R = Appointment.objects.filter(
         date__range=[today, max_date], status='R').count()
 
-    return Response({"Available": count_A, "Reserved": count_R}, status=status.HTTP_200_OK)
+    return Response({'today_A': count_T_A, 'today_R': count_T_R, "Available": count_A, "Reserved": count_R, 'total': count_A+count_R}, status=status.HTTP_200_OK)
