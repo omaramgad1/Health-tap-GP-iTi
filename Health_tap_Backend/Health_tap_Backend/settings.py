@@ -47,8 +47,8 @@ INSTALLED_APPS = [
     #######################
     'Specialization',
     'User',
-     'Doctor',
-    #  'Patient',
+    'Doctor',
+    'Patient',
     'City',
     'District',
     # 'Appointment'

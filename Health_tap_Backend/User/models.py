@@ -155,24 +155,3 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.first_name
 
 
-# class Patient(models.Model):
-#     user = models.OneToOneField(User,
-#                                 on_delete=models.CASCADE, related_name='Patient')
-
-#     def __str__(self):
-#         return f'{self.user.first_name} {self.user.last_name}'
-
-
-# class Doctor(models.Model):
-#     user = models.OneToOneField(User,
-#                                 on_delete=models.CASCADE, related_name='Doctor')
-#     specialization = models.ForeignKey(
-#         Specialization, on_delete=models.CASCADE, related_name='Specialization')
-#     profLicenseNo = models.CharField(
-#         max_length=6, validators=[validate_profLicenseNum])
-#     city = models.OneToOneField( City, on_delete=models.CASCADE, related_name='doctorCity')
-#     district = models.OneToOneField( District, on_delete=models.CASCADE, related_name='doctorDistrict')
-#     address = models.CharField(max_length=255, null=True, blank=True)
-
-#     def __str__(self):
-#         return f'{self.user.first_name} {self.user.last_name} ({self.profLicenseNo})'
