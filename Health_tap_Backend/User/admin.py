@@ -15,7 +15,7 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name',
-         'date_of_birth', 'gender', 'phone', 'national_id', 'profileImgUrl')}),
+         'date_of_birth', 'gender', 'phone', 'national_id')}),  # , 'profileImgUrl'
         ('Permissions', {'fields': ('is_staff', 'is_active',
          'is_superuser')}),
 
@@ -25,7 +25,10 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'first_name', 'last_name', 'gender', 'date_of_birth', 'phone', 'national_id', 'profileImgUrl', 'password1', 'password2', 'is_staff', 'is_active', 'is_superuser'),
+            'fields': ('email', 'first_name', 'last_name',
+                       'gender', 'date_of_birth', 'phone',
+                       'national_id',  'password1',
+                       'password2', 'is_staff', 'is_active', 'is_superuser'),  # 'profileImgUrl',
         }),
     )
     search_fields = ('email', 'first_name',

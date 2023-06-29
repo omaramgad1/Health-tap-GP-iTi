@@ -23,6 +23,7 @@ urlpatterns = [
 
     path('doctor/edit/<int:appointment_id>/',
          edit_appointment, name='edit_appointment'),
+
     path('doctor/delete/<int:appointment_id>/',
          delete_appointment, name='delete_appointment'),
 
