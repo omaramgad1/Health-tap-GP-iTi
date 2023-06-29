@@ -52,7 +52,7 @@ def list_done_reservation(request):
 @permission_classes([IsAuthenticated])
 def list_specific_reservation(request, reservation_id):
     patient = request.user.patient
-    reservation = get_object_or_404(Reservation, reservation_id=reservation_id, patient=patient)
+    reservation = get_object_or_404(Reservation, id=reservation_id, patient=patient)
     serializer = ReservationSerializer(reservation)
     return Response(serializer.data)
 
