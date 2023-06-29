@@ -102,3 +102,17 @@ def delete_reservation(request, reservation_pk):
         appointment.save()
 
     return Response({'message': 'Reservation deleted successfully.'})
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def cancel_reservation(request, reservation_pk):
+    reservation = get_object_or_404(Reservation, pk=reservation_pk)
+    appointment = reservation.appointment
+
+    reservation.delete()
+
+    if not Reservation.objects.filter(appointment=appointment).exists():
+        appointment.status = 'A'
+        appointment.save()
+
+    return Response({'message': 'Reservation canceled successfully.'})
