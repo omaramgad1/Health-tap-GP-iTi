@@ -1,20 +1,32 @@
+
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from User.api.serializers import UserSerializer
-from ..models import Patient
+from Patient.models import Patient
 
 
-class PatientSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+class PatientRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = Patient
-        fields = ['user']
+        fields = ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'phone', 'national_id', 'profileImgUrl',
+                  'password', 'confirm_password', 'gender']
+
+    def validate(self, data):
+        
+        if len(data['password']) < 8:
+            raise serializers.ValidationError('Password must be at least 8 characters long')
+        if not any(c.isdigit() for c in data['password']):
+            raise serializers.ValidationError('Password must contain at least one digit')
+        
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Passwords do not match.")
+        return data
+    
+        
 
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user_serializer = UserSerializer(data=user_data)
-        if user_serializer.is_valid():
-            user = user_serializer.save(is_patient=True)
-            patient = Patient.objects.create(user=user)
-            return patient
+        del validated_data['confirm_password']
+        patient = Patient.objects.create_patient(**validated_data)
+        return patient
+

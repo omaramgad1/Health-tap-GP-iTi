@@ -2,7 +2,7 @@ from rest_framework.decorators  import  api_view, permission_classes
 from rest_framework.response import Response
 from Reservation.models import Reservation
 from Appointment.models import Appointment
-from User.models import Patient
+from Patient.models import Patient
 from .serializers import ReservationSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
@@ -16,7 +16,10 @@ def list_all_reservation(request):
     print ('********************************')
     print (request.user)
     print ('********************************')
-    patient = get_object_or_404(Patient , user = request.user)
+    # patient = get_object_or_404(Patient , user = request.user)
+    patient = request.user.patient
+    print(patient)
+    print ('********************************')
     reservations = Reservation.objects.filter(patient=patient)
     serializer = ReservationSerializer(reservations, many=True)
     return Response(serializer.data)
@@ -24,7 +27,8 @@ def list_all_reservation(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_reserved_reservation(request):
-    patient = get_object_or_404(Patient , user = request.user)
+    # patient = get_object_or_404(Patient , user = request.user)
+    patient = request.user.patient
     reservations = Reservation.objects.filter( patient=patient, status='R')
     serializer = ReservationSerializer(reservations, many=True)
     return Response(serializer.data)

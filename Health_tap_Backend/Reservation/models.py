@@ -1,5 +1,5 @@
 from django.db import models
-from User.models import Patient
+from Patient.models import Patient
 from Appointment.models import Appointment
 from django.utils import timezone
 
@@ -21,11 +21,11 @@ class Reservation(models.Model):
     class Meta:
         verbose_name_plural = 'Reservations'
 
-    def save(self, *args, **kwargs):
-        appointment_end_time = self.appointment.end_time()
-        current_time = timezone.now().time()
+    # def save(self, *args, **kwargs):
+    #     appointment_end_time = self.appointment.end_time()
+    #     current_time = timezone.now().time()
 
-        if current_time > appointment_end_time and self.status != 'D':
-            self.status = 'D'
+    #     if current_time > appointment_end_time and self.status != 'D':
+    #         self.status = 'D'
             
-        super().save(*args, **kwargs)
+    #     super().save(*args, **kwargs)

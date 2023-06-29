@@ -1,20 +1,47 @@
+
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from User.api.serializers import UserSerializer
 from ..models import Doctor
+import re
+from django.core.exceptions import ValidationError
 
 
-class DoctorSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+def validate_profLicenseNum(value):
+    pattern = r'^[02468]\d[13579]{2}\d{2}$'
+    match = re.match(pattern, value)
+    if match is None:
+        raise ValidationError("profession License Number Invalid!.")
 
+
+class DoctorRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+    
     class Meta:
         model = Doctor
-        fields = ['user', 'specialization', 'profLicenseNo']
+        fields = ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'phone', 'national_id', 'profileImgUrl',
+                  'password', 'confirm_password', 'gender', 'specialization', 'profLicenseNo', 'city', 'district', 'address']
+
+    
+    def validate(self, data):
+        
+        try:
+            validate_profLicenseNum(data['profLicenseNo'])
+        except ValidationError as error:
+            raise serializers.ValidationError(str(error))
+        
+        if len(data['password']) < 8:
+            raise serializers.ValidationError('Password must be at least 8 characters long')
+        if not any(c.isdigit() for c in data['password']):
+            raise serializers.ValidationError('Password must contain at least one digit')
+        
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Passwords do not match.")
+        
+
+        return data
 
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user_serializer = UserSerializer(data=user_data)
-        if user_serializer.is_valid():
-            user = user_serializer.save(is_doctor=True)
-            doctor = Doctor.objects.create(user=user, **validated_data)
-            return doctor
+        del validated_data['confirm_password']
+        doctor = Doctor.objects.create_doctor(**validated_data)
+        return doctor
+

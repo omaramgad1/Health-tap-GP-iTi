@@ -2,7 +2,7 @@ from django.db import models
 from Specialization.models import Specialization
 import re
 from django.core.exceptions import ValidationError
-from User.models import User
+from User.models import User, CustomUserManager
 from City.models import City
 from District.models import District
 
@@ -16,26 +16,31 @@ def validate_profLicenseNum(value):
         raise ValidationError("profession License Number Invalid.")
 
 
-class Doctor(models.Model):
-    user = models.OneToOneField(User,
-                                on_delete=models.CASCADE,
-                                related_name='doctor')
+class DoctorManager(CustomUserManager):
+
+    def create_doctor(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_doctor', True)
+        return self._create_user(email, password, **extra_fields)
+
+
+class Doctor(User):
+    is_doctor = models.BooleanField(default=True)
     specialization = models.ForeignKey(
-        Specialization, on_delete=models.CASCADE, related_name='doctors')
+        Specialization, on_delete=models.CASCADE, related_name='Specialization')
     profLicenseNo = models.CharField(
         max_length=6, validators=[validate_profLicenseNum])
-    city = models.OneToOneField(
-        City, on_delete=models.CASCADE, related_name='doctors')
-    district = models.OneToOneField(
-        District, on_delete=models.CASCADE, related_name='doctors')
+    city = models.ForeignKey(
+            City, on_delete=models.CASCADE, related_name='doctorsByCity')
+    district = models.ForeignKey(
+            District, on_delete=models.CASCADE, related_name='doctorsByDistrict')
     address = models.CharField(max_length=255, null=True, blank=True)
+    objects = DoctorManager()
 
+    
+    def clean(self):
+        super().clean()
+        validate_profLicenseNum(self.profLicenseNo)
+        
     def __str__(self):
-        return f'{self.user.first_name} {self.user.last_name}@Doctor@({self.profLicenseNo})'
+        return f'{self.first_name} {self.last_name} ({self.profLicenseNo}) @Doctor'
 
-    def save(self, *args, **kwargs):
-        if not self.pk:  # if object is being created
-            self.user.is_active = False
-            self.user.is_doctor = True
-        self.user.save()
-        super().save(*args, **kwargs)

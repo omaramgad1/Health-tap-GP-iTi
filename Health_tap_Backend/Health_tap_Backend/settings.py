@@ -46,9 +46,9 @@ INSTALLED_APPS = [
     'django_filters',
     #######################
     'Specialization',
-    # 'Doctor',
-    # 'Patient',
     'User',
+    'Doctor',
+    'Patient',
     'City',
     'District',
     'Appointment',
