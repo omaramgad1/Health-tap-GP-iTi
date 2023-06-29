@@ -88,3 +88,17 @@ def create_reservation(request, appointment_pk):
 
     serializer = ReservationSerializer(reservation)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_reservation(request, reservation_pk):
+    reservation = get_object_or_404(Reservation, pk=reservation_pk)
+    appointment = reservation.appointment
+
+    reservation.delete()
+
+    if not Reservation.objects.filter(appointment=appointment).exists():
+        appointment.status = 'A'
+        appointment.save()
+
+    return Response({'message': 'Reservation deleted successfully.'})

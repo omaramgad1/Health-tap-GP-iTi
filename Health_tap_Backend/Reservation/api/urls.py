@@ -8,6 +8,7 @@ urlpatterns = [
     path('patient/list/Done/', list_done_reservation, name='list-done-reservation'),
     path('patient/list/<int:reservation_id>/', list_specific_reservation, name='list-specific-reservation'),
     path('patient/create/<int:appointment_pk>/', create_reservation, name='create-reservation'),
+    path('patient/delete/<int:reservation_pk>/', delete_reservation, name='delete-reservation'),
     
     # path('/<int:id>', appointment_detailes , name='appointment-detailes'),
 ]
