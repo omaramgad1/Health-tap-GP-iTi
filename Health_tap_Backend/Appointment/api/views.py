@@ -8,7 +8,7 @@ from ..models import Appointment, Doctor
 from .serializers import AppointmentSerializer
 from django.utils import timezone
 from datetime import datetime, timedelta, time
-
+from django.core.paginator import Paginator
 ############################## Doctor #####################
 
 
@@ -32,10 +32,28 @@ def list_doctor_appointments(request):
     tz = pytz.timezone('Africa/Cairo')
     now = now.astimezone(tz)
     current_date = now.date()
-    appointments = doctor.appointments.filter(date__gte=current_date)
 
-    serializer = AppointmentSerializer(appointments, many=True)
-    return Response(serializer.data)
+    base_url = request.scheme + '://' + request.get_host()
+
+    queryset = doctor.appointments.filter(date__gte=current_date)
+    queryset_len = doctor.appointments.filter(date__gte=current_date).count()
+    # limit = request.GET.get('limit', 10)
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(queryset, 10)
+    objects = paginator.get_page(page)
+    serializer = AppointmentSerializer(objects, many=True)
+
+    return Response({'result': serializer.data,
+                     'next': f'{base_url}/appointment/doctor/list-all/?page={objects.next_page_number()}' if objects.has_next() else None,
+                     'previous': f'{base_url}/appointment/doctor/list-all/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'count': queryset_len,
+
+                     'previous_page': objects.previous_page_number() if objects.has_previous() else None,
+                     'current_page': objects.number,
+                     'next_page': objects.next_page_number() if objects.has_next() else None,
+                     'total_pages': paginator.num_pages,
+                     })
 
 
 @api_view(['GET'])
@@ -45,10 +63,27 @@ def list_doctor_history_appointments(request):
     now = timezone.localtime()
     tz = pytz.timezone('Africa/Cairo')
     now = now.astimezone(tz)
-    appointments = doctor.appointments.filter(date__lt=now.date())
+    base_url = request.scheme + '://' + request.get_host()
 
-    serializer = AppointmentSerializer(appointments, many=True)
-    return Response(serializer.data)
+    queryset = doctor.appointments.filter(date__lt=now.date())
+    queryset_len = doctor.appointments.filter(date__lt=now.date()).count()
+    # limit = request.GET.get('limit', 10)
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(queryset, 10)
+    objects = paginator.get_page(page)
+    serializer = AppointmentSerializer(objects, many=True)
+
+    return Response({'result': serializer.data,
+                     'next': f'{base_url}/appointment/doctor/list-all/?page={objects.next_page_number()}' if objects.has_next() else None,
+                     'previous': f'{base_url}/appointment/doctor/list-all/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'count': queryset_len,
+
+                     'previous_page': objects.previous_page_number() if objects.has_previous() else None,
+                     'current_page': objects.number,
+                     'next_page': objects.next_page_number() if objects.has_next() else None,
+                     'total_pages': paginator.num_pages,
+                     })
 
 
 @api_view(['PUT'])
@@ -94,10 +129,31 @@ def list_available_appointments(request):
     now = now.astimezone(tz)
     today = now.date()
     max_date = today + timezone.timedelta(days=6)
-    appointments = Appointment.objects.filter(
+
+    base_url = request.scheme + '://' + request.get_host()
+
+    queryset = Appointment.objects.filter(
         date__range=[today, max_date], status='A')
-    serializer = AppointmentSerializer(appointments, many=True)
-    return Response(serializer.data)
+    queryset_len = Appointment.objects.filter(
+        date__range=[today, max_date], status='A').count()
+
+    # limit = request.GET.get('limit', 10)
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(queryset, 10)
+    objects = paginator.get_page(page)
+    serializer = AppointmentSerializer(objects, many=True)
+
+    return Response({'result': serializer.data,
+                     'next': f'{base_url}/appointment/doctor/list-all/?page={objects.next_page_number()}' if objects.has_next() else None,
+                     'previous': f'{base_url}/appointment/doctor/list-all/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'count': queryset_len,
+
+                     'previous_page': objects.previous_page_number() if objects.has_previous() else None,
+                     'current_page': objects.number,
+                     'next_page': objects.next_page_number() if objects.has_next() else None,
+                     'total_pages': paginator.num_pages,
+                     })
 
 
 @api_view(['GET'])
@@ -108,10 +164,29 @@ def list_reserved_appointments(request):
     now = now.astimezone(tz)
     today = now.date()
     max_date = today + timezone.timedelta(days=6)
-    appointments = Appointment.objects.filter(
+    base_url = request.scheme + '://' + request.get_host()
+
+    queryset = Appointment.objects.filter(
         date__range=[today, max_date], status='R')
-    serializer = AppointmentSerializer(appointments, many=True)
-    return Response(serializer.data)
+    queryset_len = Appointment.objects.filter(
+        date__range=[today, max_date], status='R').count()
+    # limit = request.GET.get('limit', 10)
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(queryset, 10)
+    objects = paginator.get_page(page)
+    serializer = AppointmentSerializer(objects, many=True)
+
+    return Response({'result': serializer.data,
+                     'next': f'{base_url}/appointment/doctor/list-all/?page={objects.next_page_number()}' if objects.has_next() else None,
+                     'previous': f'{base_url}/appointment/doctor/list-all/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'count': queryset_len,
+
+                     'previous_page': objects.previous_page_number() if objects.has_previous() else None,
+                     'current_page': objects.number,
+                     'next_page': objects.next_page_number() if objects.has_next() else None,
+                     'total_pages': paginator.num_pages,
+                     })
 
 
 @api_view(['GET'])
@@ -126,14 +201,35 @@ def get_available_appointments(request):
     now = now.astimezone(tz)
 
     # Get the appointments for today that are not already booked
-    available_appointments = Appointment.objects.filter(
+    base_url = request.scheme + '://' + request.get_host()
+
+    queryset = Appointment.objects.filter(
         doctor=doctor,
         date=now.date(),
         status='A',
     )
-    # Serialize the available appointments and return the response
-    serializer = AppointmentSerializer(available_appointments, many=True)
-    return Response(serializer.data)
+    queryset_len = Appointment.objects.filter(
+        doctor=doctor,
+        date=now.date(),
+        status='A',
+    ).count()
+    # limit = request.GET.get('limit', 10)
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(queryset, 10)
+    objects = paginator.get_page(page)
+    serializer = AppointmentSerializer(objects, many=True)
+
+    return Response({'result': serializer.data,
+                     'next': f'{base_url}/appointment/doctor/list-all/?page={objects.next_page_number()}' if objects.has_next() else None,
+                     'previous': f'{base_url}/appointment/doctor/list-all/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'count': queryset_len,
+
+                     'previous_page': objects.previous_page_number() if objects.has_previous() else None,
+                     'current_page': objects.number,
+                     'next_page': objects.next_page_number() if objects.has_next() else None,
+                     'total_pages': paginator.num_pages,
+                     })
 
 
 @api_view(['GET'])
@@ -150,14 +246,35 @@ def get_reserved_appointments(request):
     now = now.astimezone(tz)
 
     # Get the appointments for today that are not already booked
-    available_appointments = Appointment.objects.filter(
+    base_url = request.scheme + '://' + request.get_host()
+
+    queryset = Appointment.objects.filter(
         doctor=doctor,
         date=now.date(),
         status='R',
     )
-    # Serialize the available appointments and return the response
-    serializer = AppointmentSerializer(available_appointments, many=True)
-    return Response(serializer.data)
+    queryset_len = Appointment.objects.filter(
+        doctor=doctor,
+        date=now.date(),
+        status='R',
+    ).count()
+    # limit = request.GET.get('limit', 10)
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(queryset, 10)
+    objects = paginator.get_page(page)
+    serializer = AppointmentSerializer(objects, many=True)
+
+    return Response({'result': serializer.data,
+                     'next': f'{base_url}/appointment/doctor/list-all/?page={objects.next_page_number()}' if objects.has_next() else None,
+                     'previous': f'{base_url}/appointment/doctor/list-all/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'count': queryset_len,
+
+                     'previous_page': objects.previous_page_number() if objects.has_previous() else None,
+                     'current_page': objects.number,
+                     'next_page': objects.next_page_number() if objects.has_next() else None,
+                     'total_pages': paginator.num_pages,
+                     })
 
 
 @api_view(['GET'])
@@ -176,3 +293,50 @@ def count_available_reserved_appointments(request):
         date__range=[today, max_date], status='R').count()
 
     return Response({'today_A': count_T_A, 'today_R': count_T_R, "Available": count_A, "Reserved": count_R, 'total': count_A+count_R}, status=status.HTTP_200_OK)
+
+
+############################## Patient #####################
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_available_appointments_patient(request, doctor_id):
+    # Get the `doctor` object from the request user
+    try:
+        doctor = Doctor.objects.get(id=doctor_id)
+    except Doctor.DoesNotExist:
+        return Response({'error': 'Doctor not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Get the current date and time in the server's timezone
+    now = timezone.localtime()
+    # Convert the current date and time to the doctor's timezone
+    tz = pytz.timezone('Africa/Cairo')
+    now = now.astimezone(tz)
+    today = now.date()
+    max_date = today + timezone.timedelta(days=6)
+    # Get the appointments for today that are not already booked
+    base_url = request.scheme + '://' + request.get_host()
+
+    queryset = Appointment.objects.filter(
+        doctor=doctor,
+        date__range=[today, max_date], status='A'
+    )
+    queryset_len = Appointment.objects.filter(
+        doctor=doctor,
+        date__range=[today, max_date], status='A'
+    ).count()
+    # limit = request.GET.get('limit', 10)
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(queryset, 10)
+    objects = paginator.get_page(page)
+    serializer = AppointmentSerializer(objects, many=True)
+
+    return Response({'result': serializer.data,
+                     'next': f'{base_url}/appointment/doctor/list-all/?page={objects.next_page_number()}' if objects.has_next() else None,
+                     'previous': f'{base_url}/appointment/doctor/list-all/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'count': queryset_len,
+
+                     'previous_page': objects.previous_page_number() if objects.has_previous() else None,
+                     'current_page': objects.number,
+                     'next_page': objects.next_page_number() if objects.has_next() else None,
+                     'total_pages': paginator.num_pages,
+                     })
