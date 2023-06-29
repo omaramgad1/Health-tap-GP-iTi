@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'Patient',
     'City',
     'District',
-    # 'Appointment'
+    'Appointment'
 ]
 
 

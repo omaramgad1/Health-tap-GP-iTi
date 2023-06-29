@@ -14,7 +14,7 @@ urlpatterns = [
     path('specialization/', include('Specialization.api.urls')),
     path('city/', include('City.api.urls')),
     path('district/', include('District.api.urls')),
-    # path('appointment/', include('Appointment.api.urls')),
+    path('appointment/', include('Appointment.api.urls')),
 
 
 

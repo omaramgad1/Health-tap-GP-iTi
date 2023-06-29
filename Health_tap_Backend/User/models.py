@@ -117,7 +117,7 @@ def validate_phone_number(value):
     pattern =r'^(\+201|00201|01)?(0|1|2)[0-9]{8}$'
     if not re.match(pattern, value):
         raise ValidationError('Invalid phone number format.')
-        # +2 01033022410
+        # +201033022410
         # 01033022410
         
 class User(AbstractBaseUser, PermissionsMixin):
