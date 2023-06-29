@@ -43,7 +43,7 @@ def list_reserved_reservation(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_done_reservation(request):
-    patient = get_object_or_404(Patient , user = request.user)
+    patient = request.user.patient
     reservations = Reservation.objects.filter( patient=patient, status='D')
     serializer = ReservationSerializer(reservations, many=True)
     return Response(serializer.data)
@@ -51,7 +51,7 @@ def list_done_reservation(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_specific_reservation(request, reservation_id):
-    patient = get_object_or_404(Patient , user = request.user)
+    patient = request.user.patient
     reservation = get_object_or_404(Reservation, reservation_id=reservation_id, patient=patient)
     serializer = ReservationSerializer(reservation)
     return Response(serializer.data)
@@ -79,7 +79,7 @@ def list_specific_reservation(request, reservation_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_reservation(request, appointment_pk):
-    patient = get_object_or_404(Patient, user=request.user)
+    patient = request.user.patient
     appointment = get_object_or_404(Appointment, pk=appointment_pk, status='A')
 
     # Update the appointment status to 'R'
