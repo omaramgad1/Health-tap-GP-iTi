@@ -53,16 +53,38 @@ def list_specific_reservation(request, reservation_id):
     return Response(serializer.data)
 
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def create_reservation(request, appointment_pk):
+#     patient = get_object_or_404(Patient, user=request.user)
+#     print(patient)
+#     print("********************************")
+#     appointment = get_object_or_404(Appointment, id=appointment_pk)
+#     print(appointment)
+#     print(appointment.status)
+#     print("********************************")
+#     if appointment.status == 'A':
+#         reservation = Reservation.objects.create(patient=patient, appointment=appointment, status='R')
+#         appointment.status = 'R'
+#         appointment.save()
+#         serializer = ReservationSerializer(reservation)
+#         return Response(serializer.data)
+
+#     return Response({'message': 'Appointment is not available.'}, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def create_reservation(request, appointment_id):
+def create_reservation(request, appointment_pk):
     patient = get_object_or_404(Patient, user=request.user)
-    appointment = get_object_or_404(Appointment, id=appointment_id)
-    if appointment.status == 'A':
-        reservation = Reservation.objects.create(patient=patient, appointment=appointment, status='R')
-        appointment.status = 'R'
-        appointment.save()
-        serializer = ReservationSerializer(reservation)
-        return Response(serializer.data)
+    appointment = get_object_or_404(Appointment, pk=appointment_pk, status='A')
 
-    return Response({'message': 'Appointment is not available.'}, status=status.HTTP_400_BAD_REQUEST)
+    # Update the appointment status to 'R'
+    appointment.status = 'R'
+    appointment.save()
+
+    # Create a new reservation
+    reservation = Reservation(patient=patient, appointment=appointment, status='R')
+    reservation.save()
+
+    serializer = ReservationSerializer(reservation)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)

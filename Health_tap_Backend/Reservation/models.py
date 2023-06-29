@@ -4,9 +4,11 @@ from Appointment.models import Appointment
 from django.utils import timezone
 
 class Reservation(models.Model):
-    patient = models.ForeignKey(
-        Patient, on_delete=models.CASCADE, related_name='reservations')
+    # patient = models.ForeignKey(
+    #     Patient, on_delete=models.CASCADE, related_name='reservations')
     
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='reservations')
+    # appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
     appointment = models.OneToOneField(Appointment,on_delete=models.CASCADE)
     
     Status_CHOICES = (
@@ -25,5 +27,5 @@ class Reservation(models.Model):
 
         if current_time > appointment_end_time and self.status != 'D':
             self.status = 'D'
-
+            
         super().save(*args, **kwargs)
