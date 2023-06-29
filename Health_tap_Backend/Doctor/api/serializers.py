@@ -13,6 +13,12 @@ class DoctorRegistrationSerializer(serializers.ModelSerializer):
                   'password', 'confirm_password', 'gender', 'specialization', 'profLicenseNo', 'city', 'district', 'address']
 
     def validate(self, data):
+        
+        if len(data['password']) < 8:
+            raise serializers.ValidationError('Password must be at least 8 characters long')
+        if not any(c.isdigit() for c in data['password']):
+            raise serializers.ValidationError('Password must contain at least one digit')
+        
         if data['password'] != data['confirm_password']:
             raise serializers.ValidationError("Passwords do not match.")
         return data

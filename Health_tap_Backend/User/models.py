@@ -37,6 +37,9 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('is_superuser', False)
+        if not validate_password(password):
+            raise ValueError('Password is invalid')
+        
         return self._create_user(email, password, password2, **extra_fields)
 
     def create_superuser(self, email, password=None, password2=None, ** extra_fields):
@@ -118,7 +121,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_of_birth = models.DateField(
         null=True, blank=True, validators=[validate_date_of_birth])
     phone = PhoneNumberField(region='EG', unique=True)
-    national_id = models.CharField(max_length=14, validators=[
+    national_id = models.CharField(max_length=14, unique=True , validators=[
                                    validate_egypt_national_id])
     profileImgUrl = CloudinaryField('images', validators=[validateImage])
     password = models.CharField(validators=[validate_password], max_length=128)
@@ -149,7 +152,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     def clean(self):
         super().clean()
         if self.password != self.confirm_password:
-            raise ValidationError('Passwords do not match')
+            raise ValidationError('Passwords do not match!')
+        
+        if self.password < 8:
+            raise ValidationError('Password must be at least 8 characters long')
+        if not any(c.isdigit() for c in self.password):
+            raise ValidationError('Password must contain at least one digit')
+
 
     def __str__(self):
         return self.first_name
