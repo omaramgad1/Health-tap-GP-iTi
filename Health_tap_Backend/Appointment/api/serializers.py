@@ -6,7 +6,7 @@ from django.utils import timezone
 
 class AppointmentSerializer(serializers.ModelSerializer):
     doctor = serializers.CharField(
-        source='doctor.user.first_name', read_only=True)
+        source='doctor.first_name', read_only=True)
 
     class Meta:
         model = Appointment
