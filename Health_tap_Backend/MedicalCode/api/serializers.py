@@ -1,8 +1,11 @@
+import random
+import string
 from rest_framework import serializers
 from Patient.models import Patient
 from MedicalCode.models import MedicalEditCode
 import datetime
 import pytz
+from django.utils import timezone
 
 
 class MedicalEditCodeSerializer(serializers.ModelSerializer):
@@ -16,13 +19,32 @@ class MedicalEditCodeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         import random
         import string
-        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-        validated_data['code'] = code
-        validated_data['status'] = 'V'
-        
-        medical_edit_code = MedicalEditCode.objects.create(**validated_data)
 
-        return medical_edit_code
+        code = validated_data.get('code')
+        if not code:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
+        validated_data['code'] = code
+
+        medical_edit_code = MedicalEditCode.objects.filter(patient=validated_data['patient'], status='V').first()
+        if medical_edit_code:
+            medical_edit_code.code = code
+            medical_edit_code.save()
+            return medical_edit_code
+
+        return MedicalEditCode.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        code = validated_data.get('code')
+        if not code:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
+        validated_data['code'] = code
+
+        instance.code = code
+        instance.save()
+
+        return instance
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
