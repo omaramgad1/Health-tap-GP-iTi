@@ -7,6 +7,7 @@ from Patient.models import Patient
 from rest_framework import status
 from .permissions import *
 from django.db import transaction
+from MedicalCode.models import MedicalEditCode
 
 
 @api_view(['GET'])
@@ -67,10 +68,6 @@ def medical_entry_create(request, patient_id, code):
                 medical_entry = serializer.save(
                     doctor=request.user.doctor, patient=patient)
 
-                # Set the medical edit code status to 'expired'
-                medical_edit_code.status = 'E'
-                medical_edit_code.save()
-
             # Return the serialized data for the new object
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -105,6 +102,7 @@ def medical_entry_update(request, medical_entry_id, patient_id, code):
             # Save the updated MedicalEntry object
             with transaction.atomic():
                 updated_medical_entry = serializer.save()
+                # Set the medical edit code status to 'expired'
 
                 # Return the serialized data for the updated object
                 return Response(serializer.data, status=status.HTTP_200_OK)

@@ -31,9 +31,8 @@ INSERT INTO "City_city" ("id", "name_ar", "name_en") VALUES
 (27, 'سوهاج', 'Sohag');
 """
 
-
 class Migration(migrations.Migration):
     initial = True
-    dependencies = [('City', '0001_initial'),]
+    dependencies = [        ('City', '0001_initial'),    ]
 
-    operations = [migrations.RunSQL(insert_sql),]
+    operations = [        migrations.RunSQL(insert_sql),    ]
