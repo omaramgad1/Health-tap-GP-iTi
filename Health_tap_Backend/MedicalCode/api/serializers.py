@@ -18,7 +18,8 @@ class MedicalEditCodeSerializer(serializers.ModelSerializer):
         import string
         code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
         validated_data['code'] = code
-
+        validated_data['status'] = 'V'
+        
         medical_edit_code = MedicalEditCode.objects.create(**validated_data)
 
         return medical_edit_code
