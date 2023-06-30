@@ -93,3 +93,10 @@ class DoctorListByDistrictView(generics.ListAPIView):
     def get_queryset(self):
         district_id = self.kwargs['district_id']
         return Doctor.objects.filter(district__id=district_id)
+    
+class DoctorListBySpecializationView(generics.ListAPIView):
+    serializer_class = DoctorRegistrationSerializer
+
+    def get_queryset(self):
+        specialization_id = self.kwargs['specialization_id']
+        return Doctor.objects.filter(specialization__id=specialization_id)
