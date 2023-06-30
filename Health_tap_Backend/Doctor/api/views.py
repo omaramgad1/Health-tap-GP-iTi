@@ -10,6 +10,7 @@ from rest_framework.request import Request
 from django.contrib.auth import authenticate
 from ..tokens import create_jwt_pair_for_user
 from django.contrib.auth.hashers import check_password
+from Doctor.pagination import ListPagination
 
 @api_view(['POST'])
 def doctor_register(request):
@@ -80,6 +81,7 @@ class LoginView(APIView):
     
     
 class DoctorListByCityView(generics.ListAPIView):
+    pagination_class = ListPagination
     serializer_class = DoctorRegistrationSerializer
 
     def get_queryset(self):
@@ -88,6 +90,7 @@ class DoctorListByCityView(generics.ListAPIView):
     
     
 class DoctorListByDistrictView(generics.ListAPIView):
+    pagination_class = ListPagination
     serializer_class = DoctorRegistrationSerializer
 
     def get_queryset(self):
@@ -95,6 +98,7 @@ class DoctorListByDistrictView(generics.ListAPIView):
         return Doctor.objects.filter(district__id=district_id)
     
 class DoctorListBySpecializationView(generics.ListAPIView):
+    pagination_class = ListPagination
     serializer_class = DoctorRegistrationSerializer
 
     def get_queryset(self):
