@@ -6,5 +6,5 @@ urlpatterns = [
     path('list/doctors/', DoctorListCreateView.as_view(),
           name='doctor-list-create'),
     path('login/', LoginView.as_view(), name='login'),
-
+    path('city/<int:city_id>/', DoctorListByCityView.as_view()),
 ]

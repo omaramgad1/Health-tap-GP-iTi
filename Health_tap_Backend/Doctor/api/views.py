@@ -77,3 +77,11 @@ class LoginView(APIView):
     
 
         return Response(data=response, status=status.HTTP_200_OK)
+    
+    
+class DoctorListByCityView(generics.ListAPIView):
+    serializer_class = DoctorRegistrationSerializer
+
+    def get_queryset(self):
+        city_id = self.kwargs['city_id']
+        return Doctor.objects.filter(city__id=city_id)
