@@ -8,13 +8,13 @@ from .serializers import ReviewSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.pagination import PageNumberPagination
-
+from Review.pagination import ReviewPagination
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_all_reviews(request, doctor_id):
     doctor = get_object_or_404(Doctor, pk=doctor_id)
+    pagination_class = ReviewPagination
     reviews = Review.objects.filter(doctor=doctor)
     serializer = ReviewSerializer(reviews , many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
