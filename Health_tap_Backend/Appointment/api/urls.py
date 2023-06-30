@@ -31,6 +31,6 @@ urlpatterns = [
          delete_appointment, name='delete_appointment'),
 
     ###################### Patient #####################
-    path('patient/doctor/available/<int:doctor_id>/',
+    path('patient/doctor/<int:doctor_id>/available/',
          get_available_appointments_patient, name='get_available_appointments_patient'),
 ]

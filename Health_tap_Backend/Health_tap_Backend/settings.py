@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     'District',
     'Appointment',
     'Reservation',
+    'MedicalEntry',
+
 ]
 
 
