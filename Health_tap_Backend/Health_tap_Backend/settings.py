@@ -53,7 +53,11 @@ INSTALLED_APPS = [
     'District',
     'Appointment',
     'Reservation',
+<<<<<<< HEAD
+    'Review',
+=======
     'MedicalCode',
+>>>>>>> b88be2fb5222b31379053d02d8303b75f4ea5b8f
 ]
 
 
