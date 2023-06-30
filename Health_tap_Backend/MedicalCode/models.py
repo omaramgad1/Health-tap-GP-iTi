@@ -22,6 +22,8 @@ class MedicalEditCode(models.Model):
         if not self.pk:
             self.created_at = timezone.now()
             self.expired_at = self.created_at + timezone.timedelta(hours=1)
+        if timezone.now() >= self.expired_at:
+            self.status = 'E'
         return super().save(*args, **kwargs)
         
     def is_valid(self):
