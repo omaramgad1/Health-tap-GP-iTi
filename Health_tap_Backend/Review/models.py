@@ -14,7 +14,7 @@ class Review(models.Model):
     )
     rate = models.IntegerField(choices=RATE_CHOICES,default='1')
     comment = models.TextField(max_length=150)
-    patient = models.OneToOneField(Patient, on_delete=models.CASCADE ,related_name="patient_reviews")
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE ,related_name="patient_reviews")
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="doctor_reviews")
     
 class Meta:
