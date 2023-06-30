@@ -28,6 +28,7 @@ def doctor_register(request):
         
         
 class DoctorListCreateView(generics.ListCreateAPIView):
+    pagination_class = ListPagination
     queryset = Doctor.objects.all()
     serializer_class = DoctorRegistrationSerializer
     
