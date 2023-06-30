@@ -1,3 +1,5 @@
 from django.contrib import admin
+from MedicalCode.models import MedicalEditCode
 
-# Register your models here.
+
+admin.site.register(MedicalEditCode)

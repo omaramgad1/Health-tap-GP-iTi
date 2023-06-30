@@ -1,19 +1,22 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from Patient.models import Patient
+from rest_framework.permissions import IsAuthenticated
 from MedicalCode.models import MedicalEditCode
 from MedicalCode.api.serializers import MedicalEditCodeSerializer
-
+import datetime
 
 class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
     queryset = MedicalEditCode.objects.all()
     serializer_class = MedicalEditCodeSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         patient = serializer.validated_data['patient']
 
+        
         medical_edit_code = MedicalEditCode.objects.filter(patient=patient, status='V').first()
 
         if medical_edit_code:
@@ -21,13 +24,15 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.data  , status=status.HTTP_201_CREATED)
 
 
 class MedicalEditCodeRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MedicalEditCode.objects.all()
     serializer_class = MedicalEditCodeSerializer
-
+    permission_classes = [IsAuthenticated]
+    
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
 
