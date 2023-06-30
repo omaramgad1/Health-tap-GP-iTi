@@ -1,3 +1,5 @@
+from MedicalEntry.models import MedicalEntry
+from MedicalEntry.api.serializers import MedicalEntrySerializer
 from rest_framework import generics, status
 from rest_framework.response import Response
 from Patient.models import Patient
@@ -6,7 +8,8 @@ from MedicalCode.models import MedicalEditCode
 from MedicalCode.api.serializers import MedicalEditCodeSerializer
 import datetime
 from django.utils import timezone
-
+from django.shortcuts import get_object_or_404, redirect
+from Doctor.models import Doctor
 
 class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
     serializer_class = MedicalEditCodeSerializer
@@ -68,3 +71,24 @@ class MedicalEditCodeRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIV
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response({'detail': 'Cannot delete an expired medical edit code'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PatientMedicalEntryListDoctorView(generics.ListAPIView):
+    serializer_class = MedicalEntrySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        doctor = self.request.user.doctor
+        if not doctor.is_doctor:
+            return MedicalEntry.objects.none()
+
+        patient_id = self.kwargs['patient_id']
+        patient = get_object_or_404(Patient, id=patient_id)
+        return MedicalEntry.objects.filter(patient=patient)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        patient_id = self.kwargs['patient_id']
+        serializer = self.get_serializer(queryset, many=True)
+        return redirect(f'http://localhost:8000/medical-entry/doctor/patient/list/{patient_id}/')
+
