@@ -31,7 +31,7 @@ def patient_medical_entry_list(request):
 @permission_classes([IsDoctor])
 def patient_medical_entry_list_doctor(request, patient_id):
     try:
-        patient = patient.objects.get(id=patient_id)
+        patient = Patient.objects.get(id=patient_id)
     except Patient.DoesNotExist:
         return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -49,7 +49,7 @@ def patient_medical_entry_list_doctor(request, patient_id):
 def medical_entry_create(request, patient_id, code):
     try:
         # Get the patient object from the request data
-        patient = patient.objects.get(id=patient_id)
+        patient = Patient.objects.get(id=patient_id)
 
         # Get the medical edit code from the request data
         medical_edit_code = MedicalEditCode.objects.get(
@@ -79,12 +79,12 @@ def medical_entry_create(request, patient_id, code):
 
 
 @api_view(['PUT'])
-@permission_classes([IsDoctor, IsDoctor_Edit_Medical_Entry])
+@permission_classes([IsDoctor])
 def medical_entry_update(request, medical_entry_id, patient_id, code):
     try:
 
         # Get the patient object from the request data
-        patient = patient.objects.get(id=patient_id)
+        patient = Patient.objects.get(id=patient_id)
 
         # Get the medical edit code from the request data
         medical_edit_code = MedicalEditCode.objects.get(
@@ -96,6 +96,9 @@ def medical_entry_update(request, medical_entry_id, patient_id, code):
 
         # Get the MedicalEntry object to update
         medical_entry = MedicalEntry.objects.get(id=medical_entry_id)
+
+        if request.user.doctor != medical_entry.doctor:
+            return Response({'message': 'You are not authorized to update this medical entry'}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = MedicalEntrySerializer(medical_entry, data=request.data)
         if serializer.is_valid():

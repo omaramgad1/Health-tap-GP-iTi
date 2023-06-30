@@ -6,6 +6,7 @@ from MedicalCode.models import MedicalEditCode
 from MedicalCode.api.serializers import MedicalEditCodeSerializer
 import datetime
 
+
 class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
     queryset = MedicalEditCode.objects.all()
     serializer_class = MedicalEditCodeSerializer
@@ -16,23 +17,23 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         patient = serializer.validated_data['patient']
 
-        
-        medical_edit_code = MedicalEditCode.objects.filter(patient=patient, status='V').first()
+        medical_edit_code = MedicalEditCode.objects.filter(
+            patient=patient, status='V').first()
 
         if medical_edit_code:
             serializer = self.get_serializer(medical_edit_code)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         serializer.save()
-        
-        return Response(serializer.data  , status=status.HTTP_201_CREATED)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class MedicalEditCodeRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MedicalEditCode.objects.all()
     serializer_class = MedicalEditCodeSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
 
