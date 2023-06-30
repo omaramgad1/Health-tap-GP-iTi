@@ -7,4 +7,5 @@ urlpatterns = [
           name='doctor-list-create'),
     path('login/', LoginView.as_view(), name='login'),
     path('city/<int:city_id>/', DoctorListByCityView.as_view()),
+    path('district/<int:district_id>/', DoctorListByDistrictView.as_view()),
 ]
