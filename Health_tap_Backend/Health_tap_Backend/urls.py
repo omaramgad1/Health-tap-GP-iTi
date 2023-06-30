@@ -16,7 +16,7 @@ urlpatterns = [
     path('district/', include('District.api.urls')),
     path('appointment/', include('Appointment.api.urls')),
     path('reservation/', include('Reservation.api.urls')),
-
+    path('code/' , include('MedicalCode.api.urls')),
 
 
 
