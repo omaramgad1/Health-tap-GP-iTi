@@ -105,3 +105,25 @@ class DoctorListBySpecializationView(generics.ListAPIView):
     def get_queryset(self):
         specialization_id = self.kwargs['specialization_id']
         return Doctor.objects.filter(specialization__id=specialization_id)
+    
+class DoctorListByCityDistrictSpecializationView(generics.ListAPIView):
+    pagination_class = ListPagination
+    serializer_class = DoctorRegistrationSerializer
+
+    def get_queryset(self):
+        city_id = self.kwargs.get('city_id')
+        district_id = self.kwargs.get('district_id')
+        specialization_id = self.kwargs.get('specialization_id')
+
+        queryset = Doctor.objects.all()
+
+        if city_id is not None:
+            queryset = queryset.filter(city__id=city_id)
+
+        if district_id is not None:
+            queryset = queryset.filter(district__id=district_id)
+
+        if specialization_id is not None:
+            queryset = queryset.filter(specialization__id=specialization_id)
+
+        return queryset
