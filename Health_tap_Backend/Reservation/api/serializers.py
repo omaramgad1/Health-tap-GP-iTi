@@ -1,7 +1,12 @@
 from rest_framework import serializers
 from Reservation.models import Reservation
 from Patient.api.serializers import PatientSerializer
+from Doctor.models import Doctor
 
+class DoctorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Doctor
+        fields = '__all__'
 
 class Reservation_Appointment_Serializer(serializers.ModelSerializer):
     patient = PatientSerializer(read_only=True)
@@ -16,8 +21,8 @@ class ReservationSerializer(serializers.ModelSerializer):
     appointment_duration = serializers.SerializerMethodField()
     appointment_date = serializers.SerializerMethodField()
     appointment_price = serializers.SerializerMethodField()
-    doctor_name = serializers.SerializerMethodField()
-    
+    doctor = DoctorSerializer(source='appointment.doctor')
+
     def get_appointment_time(self, obj):
         # Format the time with AM/PM designation
         time = obj.appointment.start_time.strftime("%I:%M %p")
@@ -31,11 +36,9 @@ class ReservationSerializer(serializers.ModelSerializer):
 
     def get_appointment_price(self, obj):
         return obj.appointment.price
-    
-    def get_doctor_name(self, obj):
-        return f"{obj.appointment.doctor.first_name} {obj.appointment.doctor.last_name}"
-
 
     class Meta:
         model = Reservation
         fields = '__all__'
+    
+   
