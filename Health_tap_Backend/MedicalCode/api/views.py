@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect
 from Doctor.models import Doctor
 
+
 class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
     serializer_class = MedicalEditCodeSerializer
     permission_classes = [IsAuthenticated]
@@ -19,7 +20,7 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
         if hasattr(self.request.user, 'patient'):
             return MedicalEditCode.objects.filter(patient=self.request.user.patient)
         return MedicalEditCode.objects.none()
-    
+
     def post(self, request, *args, **kwargs):
         if not hasattr(request.user, 'patient'):
             return Response({'detail': 'You are not authorized to create a medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -33,25 +34,30 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
         if patient_id != request.user.patient.id:
             return Response({'detail': 'Patient ID in request data does not match authenticated patient ID.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        medical_edit_code = MedicalEditCode.objects.filter(patient=request.user.patient, status='V').first()
+        medical_edit_code = MedicalEditCode.objects.filter(
+            patient=request.user.patient, status='V').first()
         if medical_edit_code:
             medical_edit_code.created_at = timezone.now()
-            medical_edit_code.expired_at = medical_edit_code.created_at + timezone.timedelta(hours=1)
-            medical_edit_code.status = 'V' 
+            medical_edit_code.expired_at = medical_edit_code.created_at + \
+                timezone.timedelta(hours=1)
+            medical_edit_code.status = 'V'
             medical_edit_code.save()
         else:
             code = validated_data.get('code')
             if not code:
                 import random
                 import string
-                code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+                code = ''.join(random.choices(
+                    string.ascii_uppercase + string.digits, k=10))
                 validated_data['code'] = code
 
             validated_data['created_at'] = timezone.now()
-            validated_data['expired_at'] = validated_data['created_at'] + timezone.timedelta(hours=1)
+            validated_data['expired_at'] = validated_data['created_at'] + \
+                timezone.timedelta(hours=1)
             validated_data['status'] = 'V'
 
-            medical_edit_code = MedicalEditCode.objects.create(**validated_data)
+            medical_edit_code = MedicalEditCode.objects.create(
+                **validated_data)
 
         serializer = self.get_serializer(medical_edit_code)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -90,5 +96,8 @@ class PatientMedicalEntryListDoctorView(generics.ListAPIView):
         queryset = self.get_queryset()
         patient_id = self.kwargs['patient_id']
         serializer = self.get_serializer(queryset, many=True)
-        return redirect(f'http://localhost:8000/medical-entry/doctor/patient/list/{patient_id}/')
 
+        base_url = request.scheme + '://' + request.get_host()
+        return redirect(f'{base_url}/medical-entry/doctor/patient/list/{patient_id}/')
+
+# code

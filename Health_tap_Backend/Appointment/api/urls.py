@@ -4,11 +4,13 @@ from .views import *
 urlpatterns = [
 
     path('doctor/add/', add_appointment, name='add_appointment'),
+
     path('doctor/list-all/', list_doctor_appointments,
          name='list_doctor_appointments'),
 
     path('doctor/list-history/', list_doctor_history_appointments,
          name='list_doctor_history_appointments'),
+
     path('doctor/list/available/', list_available_appointments,
          name='list_available_appointments'),
 
@@ -30,7 +32,15 @@ urlpatterns = [
     path('doctor/delete/<int:appointment_id>/',
          delete_appointment, name='delete_appointment'),
 
+    path('doctor/list/date/<slug:date>/',
+         list_doctor_appointments_by_date, name='list_doctor_appointments_by_date'),
+
     ###################### Patient #####################
     path('patient/doctor/<int:doctor_id>/available/',
          get_available_appointments_patient, name='get_available_appointments_patient'),
+
+
+    path('patient/list/date/<slug:date>/',
+         list_doctor_appointments_by_date, name='list_doctor_appointments_by_date'),
+
 ]
