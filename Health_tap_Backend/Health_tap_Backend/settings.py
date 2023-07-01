@@ -98,6 +98,8 @@ TEMPLATES = [
     },
 ]
 
+STRIP_SECRETE_KEY = 'sk_test_51N6ijoDIajLiykdANbBTjryP0yU2fqkf3Ta8vB4LepConqUjHImukXhzXsFFTgs0iOTmH9BSZb7Y25mMTT59oysA00UfbdvZGQ'
+
 WSGI_APPLICATION = 'Health_tap_Backend.wsgi.application'
 
 
@@ -222,3 +224,5 @@ AUTH_USER_MODEL = "User.user"
 # STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
 
 JAZZMIN_SETTINGS = JAZZMIN_SETTINGS
+
+SITE_URL = 'http://localhost:3000'
