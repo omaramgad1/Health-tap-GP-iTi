@@ -7,9 +7,9 @@ from django.utils import timezone
 
 def validate_date_range(value):
     today = timezone.localdate()
-    max_date = today + timezone.timedelta(days=6)
+    max_date = today + timezone.timedelta(days=7)
     if value < today or value > max_date:
-        raise ValidationError('Date must be today or within the next 6 days')
+        raise ValidationError('Date must be today or within the next 7 days')
 
 
 def validate_time_range(value):

@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, redirect
 from Doctor.models import Doctor
 from datetime import datetime as dt
 
+
 class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
     serializer_class = MedicalEditCodeSerializer
     permission_classes = [IsAuthenticated]
@@ -28,16 +29,19 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
         patient_id = request.user.patient.id
         patient = get_object_or_404(Patient, id=patient_id)
 
-        medical_edit_code = MedicalEditCode.objects.filter(patient=patient, status='V').first()
+        medical_edit_code = MedicalEditCode.objects.filter(
+            patient=patient, status='V').first()
         if medical_edit_code:
             medical_edit_code.created_at = timezone.now()
-            medical_edit_code.expired_at = medical_edit_code.created_at + timezone.timedelta(hours=1)
+            medical_edit_code.expired_at = medical_edit_code.created_at + \
+                timezone.timedelta(hours=1)
             medical_edit_code.status = 'V'
             medical_edit_code.save()
         else:
             import random
             import string
-            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+            code = ''.join(random.choices(
+                string.ascii_uppercase + string.digits, k=10))
 
             validated_data = {
                 'patient': patient,
@@ -47,7 +51,8 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
                 'status': 'V',
             }
 
-            medical_edit_code = MedicalEditCode.objects.create(**validated_data)
+            medical_edit_code = MedicalEditCode.objects.create(
+                **validated_data)
 
         serializer = self.get_serializer(medical_edit_code)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -81,10 +86,10 @@ class PatientMedicalEntryListDoctorView(generics.GenericAPIView):
         patient_id = self.kwargs['patient_id']
         patient = get_object_or_404(Patient, id=patient_id)
 
-        medical_edit_code = MedicalEditCode.objects.filter(patient=patient).first()
+        medical_edit_code = MedicalEditCode.objects.filter(
+            patient=patient).first()
         if not medical_edit_code:
             return Response({'detail': 'Invalid medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
-
 
         if medical_edit_code.status == 'E' or dt.now().date() > medical_edit_code.expired_at.date():
             return Response({'detail': 'Medical edit code has expired.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -98,4 +103,3 @@ class PatientMedicalEntryListDoctorView(generics.GenericAPIView):
 
         base_url = request.scheme + '://' + request.get_host()
         return redirect(f'{base_url}/medical-entry/doctor/patient/list/{patient_id}/')
-

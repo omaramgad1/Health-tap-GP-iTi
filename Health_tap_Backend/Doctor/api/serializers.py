@@ -3,6 +3,7 @@ from rest_framework import serializers
 from ..models import Doctor
 import re
 from django.core.exceptions import ValidationError
+from Specialization.api.serializers import SpecializationSerializer
 
 
 class DoctorSerializer(serializers.ModelSerializer):
@@ -38,6 +39,7 @@ def validate_profLicenseNum(value):
 class DoctorRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
+    specialization = SpecializationSerializer(read_only=True)
 
     class Meta:
         model = Doctor
