@@ -39,12 +39,12 @@ def validate_profLicenseNum(value):
 class DoctorRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
-    specialization = SpecializationSerializer(read_only=True)
+    specialization_data = SpecializationSerializer(read_only=True)
 
     class Meta:
         model = Doctor
         fields = ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'phone', 'national_id', 'profileImgUrl',
-                  'password', 'confirm_password', 'gender', 'specialization', 'profLicenseNo', 'city', 'district', 'address']
+                  'password', 'confirm_password', 'gender', 'specialization', 'specialization_data', 'profLicenseNo', 'city', 'district', 'address']
 
     def validate(self, data):
 

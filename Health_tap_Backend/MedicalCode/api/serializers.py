@@ -6,14 +6,18 @@ from MedicalCode.models import MedicalEditCode
 import datetime
 import pytz
 from django.utils import timezone
+from Appointment.api.serializers import AppointmentSerializer
 
 
 class MedicalEditCodeSerializer(serializers.ModelSerializer):
-    patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
+    patient = serializers.PrimaryKeyRelatedField(
+        queryset=Patient.objects.all())
+    appointment = AppointmentSerializer(read_only=True)
 
     class Meta:
         model = MedicalEditCode
-        fields = ['id', 'patient', 'code', 'created_at', 'expired_at', 'status']
+        fields = ['id', 'patient', 'appointment',
+                  'code', 'created_at', 'expired_at', 'status']
         read_only_fields = ['id', 'created_at', 'expired_at', 'status']
 
     def create(self, validated_data):
@@ -22,11 +26,13 @@ class MedicalEditCodeSerializer(serializers.ModelSerializer):
 
         code = validated_data.get('code')
         if not code:
-            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+            code = ''.join(random.choices(
+                string.ascii_uppercase + string.digits, k=10))
 
         validated_data['code'] = code
 
-        medical_edit_code = MedicalEditCode.objects.filter(patient=validated_data['patient'], status='V').first()
+        medical_edit_code = MedicalEditCode.objects.filter(
+            patient=validated_data['patient'], status='V').first()
         if medical_edit_code:
             medical_edit_code.code = code
             medical_edit_code.save()
@@ -37,7 +43,8 @@ class MedicalEditCodeSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         code = validated_data.get('code')
         if not code:
-            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+            code = ''.join(random.choices(
+                string.ascii_uppercase + string.digits, k=10))
 
         validated_data['code'] = code
 
@@ -49,8 +56,10 @@ class MedicalEditCodeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         print("represent called")
         representation = super().to_representation(instance)
-        created_at = datetime.datetime.strptime(representation["created_at"], '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Africa/Cairo")).strftime('%Y-%m-%d %H:%M:%S')
-        expired_at = datetime.datetime.strptime(representation["expired_at"], '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Africa/Cairo")).strftime('%Y-%m-%d %H:%M:%S')
+        created_at = datetime.datetime.strptime(representation["created_at"], '%Y-%m-%dT%H:%M:%S.%fZ').replace(
+            tzinfo=pytz.utc).astimezone(pytz.timezone("Africa/Cairo")).strftime('%Y-%m-%d %H:%M:%S')
+        expired_at = datetime.datetime.strptime(representation["expired_at"], '%Y-%m-%dT%H:%M:%S.%fZ').replace(
+            tzinfo=pytz.utc).astimezone(pytz.timezone("Africa/Cairo")).strftime('%Y-%m-%d %H:%M:%S')
         representation["created_at"] = created_at
         representation["expired_at"] = expired_at
 
