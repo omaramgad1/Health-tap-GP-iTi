@@ -4,7 +4,7 @@ from django.shortcuts import  redirect
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from Reservation.models import Reservation
+from Appointment.models import Appointment
 import stripe
 
 
@@ -12,48 +12,37 @@ stripe.api_key = settings.STRIP_SECRETE_KEY
 
 class StripeCheckOutView(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request):
-        # user_info = request.data 
-        # user_id = user_info.get('user_id')
-        
-        # print(user_id)
-        # print('-------------------------')
-        # reservations = Cart.objects.get(user_id)
-        # cart_items = CartItems.objects.filter(cart=cart)
+    def post(self, request, appointment_id):
         patient = request.user.patient
-        print ('********************************')
-        print(patient)
-        print ('********************************')
-        reservations = Reservation.objects.filter(patient=patient)
-        print ('********************************')
-        print(reservations)
-        print ('********************************')
+
+        print('-------------------------')
+        print (appointment_id)
+        print (patient)
+        print('-------------------------')
+        appointemts = Appointment.objects.get(id=appointment_id)
+        print(appointemts.price)
+        print('-------------------------')
         
-        line_items = []
-        for item in reservations:
-            product_name = item.id
+        try:
+            appointment = Appointment.objects.get(id=appointment_id)
+            price = int(appointment.price * 100)  # Convert price to cents
+            product_name = f"Appointment with {appointment.doctor}"
             
-            price = item.product.price * 100  # Stripe requires the price in cents
-            line_item = {
-                'price_data' :{
-                    'currency' : 'usd',  
-                    'reservation_data': {
-                        'name': product_name,
-                    },
-                    'unit_amount': int(price)
-                },
-                'quantity' : item.quantity
-            }
-            line_items.append(line_item)
-        try:                
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
-                line_items=line_items,
+                line_items=[{
+                    'price_data': {
+                        'currency': 'usd',
+                        'product_data': {
+                            'name': product_name,
+                        },
+                        'unit_amount': price,
+                    },
+                    'quantity': 1,
+                }],
                 mode='payment',
-                # success_url=settings.SITE_URL + '/?success=true/' + 'session_id={CHECKOUT_SESSION_ID}',
                 success_url=settings.SITE_URL + '/reservation',
-                cancel_url=settings.SITE_URL  + '?canceled=true',
-                
+                cancel_url=settings.SITE_URL + '?canceled=true',
             )
             return redirect(checkout_session.url)
         except:
