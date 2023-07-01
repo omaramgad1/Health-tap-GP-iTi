@@ -47,6 +47,7 @@ class MedicalEditCodeSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
+        print("represent called")
         representation = super().to_representation(instance)
         created_at = datetime.datetime.strptime(representation["created_at"], '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Africa/Cairo")).strftime('%Y-%m-%d %H:%M:%S')
         expired_at = datetime.datetime.strptime(representation["expired_at"], '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Africa/Cairo")).strftime('%Y-%m-%d %H:%M:%S')

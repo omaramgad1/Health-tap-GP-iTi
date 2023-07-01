@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect
 from Doctor.models import Doctor
 from datetime import datetime as dt
+from django.urls import reverse
 
 
 class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
@@ -18,7 +19,9 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        print("query set")
         if hasattr(self.request.user, 'patient'):
+            print(self.request.user.patient)
             return MedicalEditCode.objects.filter(patient=self.request.user.patient)
         return MedicalEditCode.objects.none()
 
@@ -88,18 +91,25 @@ class PatientMedicalEntryListDoctorView(generics.GenericAPIView):
 
         medical_edit_code = MedicalEditCode.objects.filter(
             patient=patient).first()
+        print(request.data)
         if not medical_edit_code:
             return Response({'detail': 'Invalid medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if medical_edit_code.status == 'E' or dt.now().date() > medical_edit_code.expired_at.date():
             return Response({'detail': 'Medical edit code has expired.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Perform the POST operation here
+        # Get the medical edit code from the request body
+        medical_edit_code_value = request.data.get('code')
+        if not medical_edit_code_value:
+            return Response({'detail': 'Please enter a valid medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if medical_edit_code_value != medical_edit_code.code:
+            return Response({'detail': 'Invalid medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
+
         validated_data = {
             'patient': patient,
             'doctor': doctor,
         }
-        medical_entry = MedicalEntry.objects.create(**validated_data)
 
         base_url = request.scheme + '://' + request.get_host()
         return redirect(f'{base_url}/medical-entry/doctor/patient/list/{patient_id}/')
