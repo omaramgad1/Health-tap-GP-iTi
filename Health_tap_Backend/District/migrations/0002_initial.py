@@ -1,7 +1,4 @@
 
-
-
-
 from django.db import migrations
 insert_sql = """
 INSERT INTO "District_district" ("city_id", "name_ar", "name_en") VALUES
@@ -487,6 +484,6 @@ INSERT INTO "District_district" ("city_id", "name_ar", "name_en") VALUES
 
 class Migration(migrations.Migration):
     initial = True
-    dependencies = [('District', '0001_initial'),]
+    dependencies = [        ('District', '0001_initial'),    ]
 
-    operations = [migrations.RunSQL(insert_sql),]
+    operations = [        migrations.RunSQL(insert_sql),    ]

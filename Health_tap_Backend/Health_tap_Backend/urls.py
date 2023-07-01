@@ -16,8 +16,10 @@ urlpatterns = [
     path('district/', include('District.api.urls')),
     path('appointment/', include('Appointment.api.urls')),
     path('reservation/', include('Reservation.api.urls')),
+    path('medical-entry/', include('MedicalEntry.api.urls')),
+
     path('review/', include('Review.api.urls')),
-    path('code/' , include('MedicalCode.api.urls')),
+    path('code/', include('MedicalCode.api.urls')),
 
 
 
