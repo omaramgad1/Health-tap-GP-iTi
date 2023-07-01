@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from Patient.models import Patient
 from Doctor.models import Doctor
+from Appointment.models import Appointment
 
 
 def validateImage(image):
@@ -27,12 +28,13 @@ def validateImage(image):
 
 class MedicalEntry(models.Model):
     comment = models.TextField()
-    prescription_image = CloudinaryField(
-        null=True, blank=True, validators=[validateImage])
+    prescription = models.TextField(null=True, blank=True)
     analysis_image = CloudinaryField(
         null=True, blank=True, validators=[validateImage])
     patient = models.ForeignKey(
         Patient, on_delete=models.CASCADE, related_name='medical_history')
+    appointment = models.OneToOneField(
+        Appointment, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
