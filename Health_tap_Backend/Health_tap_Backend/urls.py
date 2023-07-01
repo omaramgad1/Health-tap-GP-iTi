@@ -20,6 +20,7 @@ urlpatterns = [
 
     path('review/', include('Review.api.urls')),
     path('code/', include('MedicalCode.api.urls')),
+    path('payment/', include('Payment.api.urls')),
 
 
 
