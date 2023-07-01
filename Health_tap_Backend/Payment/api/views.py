@@ -21,17 +21,23 @@ class StripeCheckOutView(APIView):
         # reservations = Cart.objects.get(user_id)
         # cart_items = CartItems.objects.filter(cart=cart)
         patient = request.user.patient
+        print ('********************************')
         print(patient)
         print ('********************************')
         reservations = Reservation.objects.filter(patient=patient)
+        print ('********************************')
+        print(reservations)
+        print ('********************************')
+        
         line_items = []
         for item in reservations:
-            product_name = item.product.name
+            product_name = item.id
+            
             price = item.product.price * 100  # Stripe requires the price in cents
             line_item = {
                 'price_data' :{
                     'currency' : 'usd',  
-                    'product_data': {
+                    'reservation_data': {
                         'name': product_name,
                     },
                     'unit_amount': int(price)

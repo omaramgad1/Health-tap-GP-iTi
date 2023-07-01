@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'MedicalEntry',
     'Review',
     'MedicalCode',
+    'Payment',
 ]
 
 
