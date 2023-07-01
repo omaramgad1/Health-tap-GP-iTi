@@ -41,6 +41,6 @@ urlpatterns = [
 
 
     path('patient/list/date/<slug:date>/',
-         list_doctor_appointments_by_date, name='list_doctor_appointments_by_date'),
+         list_doctor_appointments_by_date_pateint, name='list_doctor_appointments_by_date_pateint'),
 
 ]

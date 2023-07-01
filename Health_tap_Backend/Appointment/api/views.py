@@ -382,7 +382,7 @@ def get_available_appointments_patient(request, doctor_id):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def list_doctor_appointments_by_date(request, doctor_id, date):
+def list_doctor_appointments_by_date_pateint(request, doctor_id, date):
     # Get the `doctor` object from the request user
     try:
         doctor = Doctor.objects.get(id=doctor_id)
