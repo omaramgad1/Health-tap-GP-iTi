@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404, redirect
 from Doctor.models import Doctor
 from datetime import datetime as dt
 from Appointment.models import Appointment
+from django.db import IntegrityError
 
 
 class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
@@ -31,42 +32,42 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
         patient = request.user.patient
         # patient = get_object_or_404(Patient, id=patient_id)
         appointment_id = self.kwargs['appointment_id']
-
         try:
             appointment = Appointment.objects.get(id=appointment_id)
+            if appointment.status != 'R':
+                return Response({'detail': 'The appointment is not reserved.'}, status=status.HTTP_400_BAD_REQUEST)
         except Appointment.DoesNotExist:
-            return Response({'error': 'Doctor not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        medical_edit_code = MedicalEditCode.objects.get(
+        try :
+            medical_edit_code = MedicalEditCode.objects.get(
             patient=patient, appointment=appointment)
-
-        if medical_edit_code:
             MedicalEditCode.objects.filter(
                 patient=patient).exclude(patient=patient, appointment=appointment).delete()
-
             serializer = self.get_serializer(medical_edit_code)
             return Response(serializer.data, status=status.HTTP_200_OK)
+        except MedicalEditCode.DoesNotExist :
+                    MedicalEditCode.objects.filter(
+                        patient=patient).delete()
+                    import random
+                    import string
+                    code = ''.join(random.choices(
+                        string.ascii_uppercase + string.digits, k=10))
 
-        else:
+                    validated_data = {
+                        'patient': patient,
+                        'appointment': appointment,
+                        'code': code,
+                        'created_at': timezone.now(),
+                        'expired_at': timezone.now() + timezone.timedelta(hours=1),
+                        'status': 'V',
+                    }
 
-            MedicalEditCode.objects.filter(
-                patient=patient).delete()
-            import random
-            import string
-            code = ''.join(random.choices(
-                string.ascii_uppercase + string.digits, k=10))
-
-            validated_data = {
-                'patient': patient,
-                'appointment': appointment,
-                'code': code,
-                'created_at': timezone.now(),
-                'expired_at': timezone.now() + timezone.timedelta(hours=1),
-                'status': 'V',
-            }
-
+        try:
             medical_edit_code = MedicalEditCode.objects.create(
-                **validated_data)
+                                **validated_data)
+        except IntegrityError:
+            return Response({'detail': 'This Appointment already have a medical code'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         serializer = self.get_serializer(medical_edit_code)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
