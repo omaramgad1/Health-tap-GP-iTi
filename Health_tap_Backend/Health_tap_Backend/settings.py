@@ -53,11 +53,8 @@ INSTALLED_APPS = [
     'District',
     'Appointment',
     'Reservation',
-<<<<<<< HEAD
-    'Review',
-=======
     'MedicalCode',
->>>>>>> b88be2fb5222b31379053d02d8303b75f4ea5b8f
+    'Review',
 ]
 
 
@@ -213,6 +210,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    
 }
 
 #### Custom User Model #####
