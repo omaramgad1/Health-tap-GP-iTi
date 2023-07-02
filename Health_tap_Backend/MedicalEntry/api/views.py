@@ -9,6 +9,7 @@ from .permissions import *
 from django.db import transaction
 from MedicalCode.models import MedicalEditCode
 from Appointment.models import Appointment
+from django.core.paginator import Paginator
 
 
 @api_view(['GET'])
@@ -17,15 +18,30 @@ def patient_medical_entry_list(request):
     # Get the currently authenticated user (assumed to be a Patient)
     patient = request.user.patient
 
-    print(request.user.patient.is_patient)
-    print(patient)
     # Get the MedicalEntry objects for this patient
-    medical_entries = MedicalEntry.objects.filter(
-        patient=patient).order_by('-created_at')
-    # Serialize the MedicalEntry objects
-    serializer = MedicalEntrySerializer(medical_entries, many=True)
-    # Return the serialized data
-    return Response(serializer.data)
+    base_url = request.scheme + '://' + request.get_host()
+
+    queryset = MedicalEntry.objects.filter(
+        patient=patient).order_by('created_at')
+    queryset_len = MedicalEntry.objects.filter(
+        patient=patient).order_by('created_at').count()
+    # limit = request.GET.get('limit', 10)
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(queryset, 10)
+    objects = paginator.get_page(page)
+    serializer = MedicalEntrySerializer(objects, many=True)
+
+    return Response({'result': serializer.data,
+                     'next': f'{base_url}/patient/list/?page={objects.next_page_number()}' if objects.has_next() else None,
+                     'previous': f'{base_url}patient/list/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'count': queryset_len,
+
+                     'previous_page': objects.previous_page_number() if objects.has_previous() else None,
+                     'current_page': objects.number,
+                     'next_page': objects.next_page_number() if objects.has_next() else None,
+                     'total_pages': paginator.num_pages,
+                     })
 
 
 @api_view(['GET'])
@@ -37,12 +53,29 @@ def patient_medical_entry_list_doctor(request, patient_id):
         return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
 
     # Get the MedicalEntry objects for this patient
-    medical_entries = MedicalEntry.objects.filter(
+    base_url = request.scheme + '://' + request.get_host()
+
+    queryset = MedicalEntry.objects.filter(
         patient=patient).order_by('created_at')
-    # Serialize the MedicalEntry objects
-    serializer = MedicalEntrySerializer(medical_entries, many=True)
-    # Return the serialized data
-    return Response(serializer.data)
+    queryset_len = MedicalEntry.objects.filter(
+        patient=patient).order_by('created_at').count()
+    # limit = request.GET.get('limit', 10)
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(queryset, 10)
+    objects = paginator.get_page(page)
+    serializer = MedicalEntrySerializer(objects, many=True)
+
+    return Response({'result': serializer.data,
+                     'next': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.next_page_number()}' if objects.has_next() else None,
+                     'previous': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'count': queryset_len,
+
+                     'previous_page': objects.previous_page_number() if objects.has_previous() else None,
+                     'current_page': objects.number,
+                     'next_page': objects.next_page_number() if objects.has_next() else None,
+                     'total_pages': paginator.num_pages,
+                     })
 
 
 @api_view(['POST'])
