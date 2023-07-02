@@ -15,6 +15,7 @@ from django.db import IntegrityError
 import random
 import string
 from Health_tap_Backend.permissions import IsDoctor, IsPatient
+import pytz
 
 
 class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
@@ -31,7 +32,11 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         # if not hasattr(request.user, 'patient'):
         #     return Response({'detail': 'You are not authorized to create a medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
-
+        now = timezone.localtime()
+        tz = pytz.timezone('Africa/Cairo')
+        now = now.astimezone(tz)
+        now.now()
+        # current_date = now.date()
         patient = request.user.patient
         appointment_id = self.kwargs['appointment_id']
         try:
@@ -41,7 +46,7 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
         except Appointment.DoesNotExist:
             return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # if appointment.start_time is not timezone.now():
+        # if appointment.start_time is not now.now():
         #     return Response({'error': 'Appointment is not started'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -62,8 +67,8 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
                 'patient': patient,
                 'appointment': appointment,
                 'code': code,
-                'created_at': timezone.now(),
-                'expired_at': timezone.now() + timezone.timedelta(hours=1),
+                'created_at': now.now(),
+                'expired_at': now.now() + timezone.timedelta(hours=1),
                 'status': 'V',
             }
 
