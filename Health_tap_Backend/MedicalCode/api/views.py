@@ -11,6 +11,8 @@ from django.shortcuts import get_object_or_404, redirect
 from Doctor.models import Doctor
 from datetime import datetime as dt
 from Appointment.models import Appointment
+import random
+import string
 
 
 class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
@@ -49,8 +51,7 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
 
             MedicalEditCode.objects.filter(
                 patient=patient).delete()
-            import random
-            import string
+
             code = ''.join(random.choices(
                 string.ascii_uppercase + string.digits, k=10))
 

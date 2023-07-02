@@ -8,6 +8,7 @@ from rest_framework import status
 from .permissions import *
 from django.db import transaction
 from MedicalCode.models import MedicalEditCode
+from Appointment.models import Appointment
 
 
 @api_view(['GET'])
@@ -37,7 +38,7 @@ def patient_medical_entry_list_doctor(request, patient_id):
 
     # Get the MedicalEntry objects for this patient
     medical_entries = MedicalEntry.objects.filter(
-        patient=patient).order_by('-created_at')
+        patient=patient).order_by('created_at')
     # Serialize the MedicalEntry objects
     serializer = MedicalEntrySerializer(medical_entries, many=True)
     # Return the serialized data
@@ -46,34 +47,51 @@ def patient_medical_entry_list_doctor(request, patient_id):
 
 @api_view(['POST'])
 @permission_classes([IsDoctor])
-def medical_entry_create(request, patient_id, code):
+def medical_entry_create(request, patient_id, appointment_id):
     try:
+
+        appointment = Appointment.objects.get(id=appointment_id)
+
+        try:
+            medical_edit_code = MedicalEditCode.objects.get(
+                patient=patient, appointment=appointment)
+            return Response({'error': "NOT ACCEPTABLE"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except MedicalEditCode.DoesNotExist:
+            pass
+
         # Get the patient object from the request data
         patient = Patient.objects.get(id=patient_id)
-
-        # Get the medical edit code from the request data
-        medical_edit_code = MedicalEditCode.objects.get(
-            patient=patient, code=code)
+        if not request.data.get('code'):
+            return Response({'error': "Medical Edit Code is Required"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            # Get the medical edit code from the request data
+            medical_edit_code = MedicalEditCode.objects.get(
+                patient=patient, code=request.data.get('code'))
 
         # Check if the medical edit code is valid
         if not medical_edit_code.is_valid():
             return Response({'message': 'The medical edit code is expired or invalid'}, status=status.HTTP_400_BAD_REQUEST)
+        req_data = {
+            'comment': request.data.get('comment'),
+            'prescription': request.data.get('prescription') if request.data.get('prescription') else None,
+            'analysis_image': request.data.get('analysis_image') if request.data.get('analysis_image') else None,
+        }
 
         # Create a new MedicalEntry object
-        serializer = MedicalEntrySerializer(data=request.data)
+        serializer = MedicalEntrySerializer(data=req_data)
         if serializer.is_valid():
             # Save the new MedicalEntry object
             with transaction.atomic():
                 # Save the new MedicalEntry object
                 medical_entry = serializer.save(
-                    doctor=request.user.doctor, patient=patient)
+                    doctor=request.user.doctor, patient=patient, appointment=appointment)
 
             # Return the serialized data for the new object
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             # Return the validation errors
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    except (Patient.DoesNotExist, MedicalEditCode.DoesNotExist):
+    except (Patient.DoesNotExist, MedicalEditCode.DoesNotExist, Appointment.DoesNotExist):
         # Return a 404 error if the patient or medical edit code object doesn't exist
         return Response(status=status.HTTP_404_NOT_FOUND)
 
