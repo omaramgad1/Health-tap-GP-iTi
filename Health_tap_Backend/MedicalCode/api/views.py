@@ -30,7 +30,6 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
             return Response({'detail': 'You are not authorized to create a medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
 
         patient = request.user.patient
-        # patient = get_object_or_404(Patient, id=patient_id)
         appointment_id = self.kwargs['appointment_id']
         try:
             appointment = Appointment.objects.get(id=appointment_id)
@@ -93,7 +92,7 @@ class PatientMedicalEntryListDoctorView(generics.GenericAPIView):
     serializer_class = MedicalEntrySerializer
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request,appointment_id, *args, **kwargs):
         doctor = request.user.doctor
         if not doctor or not doctor.is_doctor:
             return Response({'detail': 'You are not authorized to perform this operation.'}, status=status.HTTP_403_FORBIDDEN)
@@ -103,19 +102,21 @@ class PatientMedicalEntryListDoctorView(generics.GenericAPIView):
 
         medical_edit_code = MedicalEditCode.objects.filter(
             patient=patient).first()
-        print(request.data)
         if not medical_edit_code:
             return Response({'detail': 'Invalid medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        appointment = get_object_or_404(Appointment, id=appointment_id)     
+        if appointment != medical_edit_code.appointment  or appointment.status != 'R':
+            return Response({'detail': 'Invalid appointment or the appointment is not completed.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if medical_edit_code.status == 'E' or dt.now().date() > medical_edit_code.expired_at.date():
             return Response({'detail': 'Medical edit code has expired.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Perform the POST operation here
         validated_data = {
             'patient': patient,
             'doctor': doctor,
         }
-        medical_entry = MedicalEntry.objects.create(**validated_data)
 
         base_url = request.scheme + '://' + request.get_host()
         return redirect(f'{base_url}/medical-entry/doctor/patient/list/{patient_id}/')

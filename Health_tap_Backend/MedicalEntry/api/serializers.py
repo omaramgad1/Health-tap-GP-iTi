@@ -10,5 +10,5 @@ class MedicalEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MedicalEntry
-        fields = ['id', 'comment', 'prescription_image', 'analysis_image',
+        fields = ['id', 'comment', 'prescription', 'analysis_image',
                   'patient', 'doctor', 'created_at', 'updated_at']
