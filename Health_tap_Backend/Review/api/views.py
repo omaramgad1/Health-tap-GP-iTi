@@ -13,11 +13,12 @@ from Review.pagination import ReviewPagination
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_all_reviews(request, doctor_id):
-    pagination_class = ReviewPagination
     doctor = get_object_or_404(Doctor, pk=doctor_id)
     reviews = Review.objects.filter(doctor=doctor)
-    serializer = ReviewSerializer(reviews , many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    paginator = ReviewPagination()
+    paginated_reviews = paginator.paginate_queryset(reviews , request)
+    serializer = ReviewSerializer(paginated_reviews , many=True)
+    return paginator.get_paginated_response(serializer.data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
