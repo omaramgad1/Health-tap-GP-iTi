@@ -14,4 +14,6 @@ urlpatterns = [
 
     path('doctor/update/<int:medical_entry_id>/patient/<int:patient_id>/appointment/<int:appointment_id>/', medical_entry_update,
          name='medical_entry_update'),
+    
+    path('patient/<int:patient_id>/medical-entries/' , PatientMedicalEntryList.as_view() , name='medical-entry-list')
 ]
