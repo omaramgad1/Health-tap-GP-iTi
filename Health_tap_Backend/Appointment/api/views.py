@@ -134,8 +134,10 @@ def list_available_appointments(request):
     base_url = request.scheme + '://' + request.get_host()
 
     queryset = Appointment.objects.filter(
+        doctor=request.user.doctor,
         date__range=[today, max_date], status='A')
     queryset_len = Appointment.objects.filter(
+        doctor=request.user.doctor,
         date__range=[today, max_date], status='A').count()
 
     # limit = request.GET.get('limit', 10)
@@ -168,6 +170,7 @@ def list_reserved_appointments(request):
     base_url = request.scheme + '://' + request.get_host()
 
     queryset = Appointment.objects.filter(
+        doctor=request.user.doctor,
         date__range=[today, max_date], status='R')
     queryset_len = Appointment.objects.filter(
         date__range=[today, max_date], status='R').count()
@@ -284,13 +287,17 @@ def count_available_reserved_appointments(request):
     today = timezone.localdate()
     max_date = today + timezone.timedelta(days=7)
     count_T_A = Appointment.objects.filter(
+        doctor=request.user.doctor,
         date=today, status='A').count()
     count_T_R = Appointment.objects.filter(
+        doctor=request.user.doctor,
         date=today, status='R').count()
     count_A = Appointment.objects.filter(
+        doctor=request.user.doctor,
         date__range=[today, max_date], status='A').count()
 
     count_R = Appointment.objects.filter(
+        doctor=request.user.doctor,
         date__range=[today, max_date], status='R').count()
 
     return Response({'today_A': count_T_A, 'today_R': count_T_R, "Available": count_A, "Reserved": count_R, 'total': count_A+count_R}, status=status.HTTP_200_OK)

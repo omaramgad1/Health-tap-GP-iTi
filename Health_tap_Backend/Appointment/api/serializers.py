@@ -7,8 +7,8 @@ from Reservation.models import Reservation
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    doctor = serializers.CharField(
-        source='doctor.first_name', read_only=True)
+    # doctor = serializers.CharField(
+    #     source='doctor.first_name', read_only=True)
     reservation_data = Reservation_Appointment_Serializer(
         read_only=True)
 
