@@ -14,11 +14,12 @@ from Appointment.models import Appointment
 from django.db import IntegrityError
 import random
 import string
+from Health_tap_Backend.permissions import IsDoctor, IsPatient
 
 
 class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
     serializer_class = MedicalEditCodeSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsPatient]
 
     def get_queryset(self):
         print("query set")
@@ -28,8 +29,8 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
         return MedicalEditCode.objects.none()
 
     def post(self, request, *args, **kwargs):
-        if not hasattr(request.user, 'patient'):
-            return Response({'detail': 'You are not authorized to create a medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
+        # if not hasattr(request.user, 'patient'):
+        #     return Response({'detail': 'You are not authorized to create a medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
 
         patient = request.user.patient
         appointment_id = self.kwargs['appointment_id']
@@ -39,6 +40,9 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
                 return Response({'detail': 'The appointment is not reserved.'}, status=status.HTTP_400_BAD_REQUEST)
         except Appointment.DoesNotExist:
             return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # if appointment.start_time is not timezone.now():
+        #     return Response({'error': 'Appointment is not started'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             medical_edit_code = MedicalEditCode.objects.get(
@@ -76,7 +80,7 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
 class MedicalEditCodeRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MedicalEditCode.objects.all()
     serializer_class = MedicalEditCodeSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsPatient]
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -91,7 +95,7 @@ class MedicalEditCodeRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIV
 
 class PatientMedicalEntryListDoctorView(generics.GenericAPIView):
     serializer_class = MedicalEntrySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsDoctor]
 
     def post(self, request, appointment_id, *args, **kwargs):
         doctor = request.user.doctor

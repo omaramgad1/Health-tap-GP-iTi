@@ -9,13 +9,14 @@ from .serializers import AppointmentSerializer
 from django.utils import timezone
 from datetime import datetime, timedelta, time
 from django.core.paginator import Paginator
-
+from Health_tap_Backend.permissions import IsDoctor
 ############################## Doctor #####################
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDoctor])
 def add_appointment(request):
+
     doctor = request.user.doctor
     serializer = AppointmentSerializer(
         data=request.data, context={'doctor': doctor})
@@ -26,8 +27,9 @@ def add_appointment(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDoctor])
 def list_doctor_appointments(request):
+
     doctor = request.user.doctor
     now = timezone.localtime()
     tz = pytz.timezone('Africa/Cairo')
@@ -58,7 +60,7 @@ def list_doctor_appointments(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDoctor])
 def list_doctor_history_appointments(request):
     doctor = request.user.doctor
     now = timezone.localtime()
@@ -88,9 +90,10 @@ def list_doctor_history_appointments(request):
 
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDoctor])
 def edit_appointment(request, appointment_id):
     # Get the `doctor` object from the request user
+
     doctor = request.user.doctor
 
     # Get the `appointment` object for the given ID and doctor
@@ -111,8 +114,9 @@ def edit_appointment(request, appointment_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDoctor])
 def delete_appointment(request, appointment_id):
+
     doctor = request.user.doctor
     appointment = get_object_or_404(
         Appointment, id=appointment_id, doctor=doctor)
@@ -123,8 +127,9 @@ def delete_appointment(request, appointment_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDoctor])
 def list_available_appointments(request):
+
     now = timezone.localtime()
     tz = pytz.timezone('Africa/Cairo')
     now = now.astimezone(tz)
@@ -160,8 +165,9 @@ def list_available_appointments(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDoctor])
 def list_reserved_appointments(request):
+
     now = timezone.localtime()
     tz = pytz.timezone('Africa/Cairo')
     now = now.astimezone(tz)
@@ -194,7 +200,7 @@ def list_reserved_appointments(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDoctor])
 def get_available_appointments(request):
     # Get the `doctor` object from the request user
     doctor = request.user.doctor
@@ -237,9 +243,10 @@ def get_available_appointments(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDoctor])
 def get_reserved_appointments(request):
     # Get the `doctor` object from the request user
+
     doctor = request.user.doctor
 
     # Get the current date and time in the server's timezone
@@ -282,8 +289,9 @@ def get_reserved_appointments(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDoctor])
 def count_available_reserved_appointments(request):
+
     today = timezone.localdate()
     max_date = today + timezone.timedelta(days=7)
     count_T_A = Appointment.objects.filter(
@@ -304,8 +312,9 @@ def count_available_reserved_appointments(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDoctor])
 def list_doctor_appointments_by_date(request, date):
+
     doctor = request.user.doctor
 
     base_url = request.scheme + '://' + request.get_host()

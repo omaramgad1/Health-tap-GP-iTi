@@ -5,14 +5,14 @@ class IsDoctor(permissions.BasePermission):
 
     def has_permission(self, request, view):
         # Check if the user has the 'doctor' role
-        return request.user.is_authenticated and request.user.doctor.is_doctor
+        return request.user.is_authenticated and hasattr(request.user, 'doctor')
 
 
 class IsPatient(permissions.BasePermission):
 
     def has_permission(self, request, view):
         # Check if the user has the 'Patient' role
-        return request.user.is_authenticated and request.user.patient.is_patient
+        return request.user.is_authenticated and hasattr(request.user, 'patient')
 
 
 class IsDoctor_Edit_Medical_Entry(permissions.BasePermission):

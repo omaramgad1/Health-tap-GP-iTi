@@ -76,7 +76,7 @@ ROOT_URLCONF = 'Health_tap_Backend.urls'
 
 ### JWT Authorization Settings ###
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
@@ -214,7 +214,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-    
+
 }
 
 #### Custom User Model #####

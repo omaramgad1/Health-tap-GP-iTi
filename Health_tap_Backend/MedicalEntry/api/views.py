@@ -5,8 +5,7 @@ from rest_framework.response import Response
 from ..models import MedicalEntry
 from .serializers import MedicalEntrySerializer
 from Patient.models import Patient
-from rest_framework import status , generics
-from .permissions import *
+from rest_framework import status, generics
 from django.db import transaction
 from MedicalCode.models import MedicalEditCode
 from Appointment.models import Appointment
@@ -15,10 +14,11 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.paginator import Paginator
+from Health_tap_Backend.permissions import IsDoctor, IsPatient
 
 
 @api_view(['GET'])
-@permission_classes([IsPatient])    
+@permission_classes([IsPatient])
 def patient_medical_entry_list(request):
     # Get the currently authenticated user (assumed to be a Patient)
     patient = request.user.patient
@@ -167,7 +167,7 @@ def medical_entry_update(request, medical_entry_id, patient_id, appointment_id):
         if request.user.doctor != medical_entry.doctor:
             return Response({'message': 'You are not authorized to update this medical entry'}, status=status.HTTP_403_FORBIDDEN)
         if appointment != medical_entry.appointment:
-            return Response({'message': 'You are can not update your old medical entry'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'message': 'You can not update this medical entry'}, status=status.HTTP_403_FORBIDDEN)
 
         req_data = {
             'comment': request.data.get('comment') if request.data.get('comment') else medical_entry.comment,
@@ -193,25 +193,25 @@ def medical_entry_update(request, medical_entry_id, patient_id, appointment_id):
         return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-
 class PatientMedicalEntryList(generics.ListAPIView):
     serializer_class = MedicalEntrySerializer
     permission_classes = [IsPatient]
     pagination_class = EntriesPagination
     filter_backends = [DjangoFilterBackend]
-    search_fields = ['doctor__specialization', 'doctor__id']
+    search_fields = ['doctor__specialization__name', 'doctor__id']
 
     def get_queryset(self):
         patient = get_object_or_404(Patient, pk=self.kwargs['patient_id'])
-        queryset = MedicalEntry.objects.filter(patient=patient).order_by('-created_at')
+        queryset = MedicalEntry.objects.filter(
+            patient=patient).order_by('-created_at')
 
         specialization_term = self.request.query_params.get('specialization')
         if specialization_term:
-            queryset = queryset.filter(doctor__specialization=specialization_term)
+            queryset = queryset.filter(
+                doctor__specialization__name__contains=specialization_term)
 
         doctor_id_term = self.request.query_params.get('doctor_id')
         if doctor_id_term:
             queryset = queryset.filter(doctor__id=doctor_id_term)
 
         return queryset
-
