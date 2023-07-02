@@ -7,7 +7,7 @@ from .serializers import ReservationSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-
+from Reservation.pagination import ReservedListPagination
 
 
 @api_view(['GET'])
@@ -30,8 +30,10 @@ def list_reserved_reservation(request):
     # patient = get_object_or_404(Patient , user = request.user)
     patient = request.user.patient
     reservations = Reservation.objects.filter( patient=patient, status='R')
+    paginator = ReservedListPagination()
+    paginated_list = paginator.paginate_queryset(reservations , request)
     serializer = ReservationSerializer(reservations, many=True)
-    return Response(serializer.data)
+    return paginator.get_paginated_response(serializer.data)
 
 # @api_view(['GET'])
 # @permission_classes([IsAuthenticated])

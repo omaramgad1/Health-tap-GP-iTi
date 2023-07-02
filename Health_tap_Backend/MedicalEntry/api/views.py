@@ -1,19 +1,24 @@
+from MedicalEntry.pagination import EntriesPagination
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ..models import MedicalEntry
 from .serializers import MedicalEntrySerializer
 from Patient.models import Patient
-from rest_framework import status
+from rest_framework import status , generics
 from .permissions import *
 from django.db import transaction
 from MedicalCode.models import MedicalEditCode
 from Appointment.models import Appointment
+from rest_framework import generics, filters
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 from django.core.paginator import Paginator
 
 
 @api_view(['GET'])
-@permission_classes([IsPatient])
+@permission_classes([IsPatient])    
 def patient_medical_entry_list(request):
     # Get the currently authenticated user (assumed to be a Patient)
     patient = request.user.patient
@@ -186,3 +191,27 @@ def medical_entry_update(request, medical_entry_id, patient_id, appointment_id):
         return Response({'error': 'Medical Edit Code not found'}, status=status.HTTP_404_NOT_FOUND)
     except Appointment.DoesNotExist:
         return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class PatientMedicalEntryList(generics.ListAPIView):
+    serializer_class = MedicalEntrySerializer
+    permission_classes = [IsPatient]
+    pagination_class = EntriesPagination
+    filter_backends = [DjangoFilterBackend]
+    search_fields = ['doctor__specialization', 'doctor__id']
+
+    def get_queryset(self):
+        patient = get_object_or_404(Patient, pk=self.kwargs['patient_id'])
+        queryset = MedicalEntry.objects.filter(patient=patient).order_by('-created_at')
+
+        specialization_term = self.request.query_params.get('specialization')
+        if specialization_term:
+            queryset = queryset.filter(doctor__specialization=specialization_term)
+
+        doctor_id_term = self.request.query_params.get('doctor_id')
+        if doctor_id_term:
+            queryset = queryset.filter(doctor__id=doctor_id_term)
+
+        return queryset
+
