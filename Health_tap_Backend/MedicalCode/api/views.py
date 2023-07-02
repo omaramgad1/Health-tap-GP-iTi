@@ -6,11 +6,12 @@ from Patient.models import Patient
 from rest_framework.permissions import IsAuthenticated
 from MedicalCode.models import MedicalEditCode
 from MedicalCode.api.serializers import MedicalEditCodeSerializer
-import datetime
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect
 from Doctor.models import Doctor
 from datetime import datetime as dt
+from Appointment.models import Appointment
+from django.db import IntegrityError
 
 
 class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
@@ -18,7 +19,9 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        print("query set")
         if hasattr(self.request.user, 'patient'):
+            print(self.request.user.patient)
             return MedicalEditCode.objects.filter(patient=self.request.user.patient)
         return MedicalEditCode.objects.none()
 
@@ -26,33 +29,44 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
         if not hasattr(request.user, 'patient'):
             return Response({'detail': 'You are not authorized to create a medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        patient_id = request.user.patient.id
-        patient = get_object_or_404(Patient, id=patient_id)
+        patient = request.user.patient
+        appointment_id = self.kwargs['appointment_id']
+        try:
+            appointment = Appointment.objects.get(id=appointment_id)
+            if appointment.status != 'R':
+                return Response({'detail': 'The appointment is not reserved.'}, status=status.HTTP_400_BAD_REQUEST)
+        except Appointment.DoesNotExist:
+            return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        medical_edit_code = MedicalEditCode.objects.filter(
-            patient=patient, status='V').first()
-        if medical_edit_code:
-            medical_edit_code.created_at = timezone.now()
-            medical_edit_code.expired_at = medical_edit_code.created_at + \
-                timezone.timedelta(hours=1)
-            medical_edit_code.status = 'V'
-            medical_edit_code.save()
-        else:
-            import random
-            import string
-            code = ''.join(random.choices(
-                string.ascii_uppercase + string.digits, k=10))
+        try :
+            medical_edit_code = MedicalEditCode.objects.get(
+            patient=patient, appointment=appointment)
+            MedicalEditCode.objects.filter(
+                patient=patient).exclude(patient=patient, appointment=appointment).delete()
+            serializer = self.get_serializer(medical_edit_code)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except MedicalEditCode.DoesNotExist :
+                    MedicalEditCode.objects.filter(
+                        patient=patient).delete()
+                    import random
+                    import string
+                    code = ''.join(random.choices(
+                        string.ascii_uppercase + string.digits, k=10))
 
-            validated_data = {
-                'patient': patient,
-                'code': code,
-                'created_at': timezone.now(),
-                'expired_at': timezone.now() + timezone.timedelta(hours=1),
-                'status': 'V',
-            }
+                    validated_data = {
+                        'patient': patient,
+                        'appointment': appointment,
+                        'code': code,
+                        'created_at': timezone.now(),
+                        'expired_at': timezone.now() + timezone.timedelta(hours=1),
+                        'status': 'V',
+                    }
 
+        try:
             medical_edit_code = MedicalEditCode.objects.create(
-                **validated_data)
+                                **validated_data)
+        except IntegrityError:
+            return Response({'detail': 'This Appointment already have a medical code'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         serializer = self.get_serializer(medical_edit_code)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -78,7 +92,7 @@ class PatientMedicalEntryListDoctorView(generics.GenericAPIView):
     serializer_class = MedicalEntrySerializer
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request,appointment_id, *args, **kwargs):
         doctor = request.user.doctor
         if not doctor or not doctor.is_doctor:
             return Response({'detail': 'You are not authorized to perform this operation.'}, status=status.HTTP_403_FORBIDDEN)
@@ -91,15 +105,18 @@ class PatientMedicalEntryListDoctorView(generics.GenericAPIView):
         if not medical_edit_code:
             return Response({'detail': 'Invalid medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+        appointment = get_object_or_404(Appointment, id=appointment_id)     
+        if appointment != medical_edit_code.appointment  or appointment.status != 'R':
+            return Response({'detail': 'Invalid appointment or the appointment is not completed.'}, status=status.HTTP_400_BAD_REQUEST)
+
         if medical_edit_code.status == 'E' or dt.now().date() > medical_edit_code.expired_at.date():
             return Response({'detail': 'Medical edit code has expired.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Perform the POST operation here
         validated_data = {
             'patient': patient,
             'doctor': doctor,
         }
-        medical_entry = MedicalEntry.objects.create(**validated_data)
 
         base_url = request.scheme + '://' + request.get_host()
         return redirect(f'{base_url}/medical-entry/doctor/patient/list/{patient_id}/')
