@@ -41,10 +41,10 @@ class StripeCheckOutView(APIView):
                     'quantity': 1,
                 }],
                 mode='payment',
-                success_url=settings.SITE_URL + '/reservation',
+                success_url=settings.SITE_URL + '/reservations',
                 cancel_url=settings.SITE_URL + '?canceled=true',
             )
-            return redirect(checkout_session.url)
+            return Response({"url": checkout_session.url})
         except:
             return Response(
                 {'error':'some thing went wrong while session checkout id'},
