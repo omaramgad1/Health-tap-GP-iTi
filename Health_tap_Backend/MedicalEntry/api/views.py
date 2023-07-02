@@ -49,29 +49,29 @@ def patient_medical_entry_list_doctor(request, patient_id):
 @permission_classes([IsDoctor])
 def medical_entry_create(request, patient_id, appointment_id):
     try:
-
         appointment = Appointment.objects.get(id=appointment_id)
+        if request.user.doctor != appointment.doctor:
+            return Response({'error': "Invaild Appointment id"}, status=status.HTTP_401_UNAUTHORIZED)
 
         patient = Patient.objects.get(id=patient_id)
-        # try:
-        #     medical_edit_code = MedicalEditCode.objects.get(
-        #         patient=patient, appointment=appointment)
-        #     print(medical_edit_code)
-        #     return Response({'error': "NOT ACCEPTABLE"}, status=status.HTTP_406_NOT_ACCEPTABLE)
-        # except MedicalEditCode.DoesNotExist:
-        #     pass
-        print(patient)
+        try:
+            MedicalEntry.objects.get(
+                patient=patient, appointment=appointment)
+            return Response({'error': "You Can not add another Entry at this appointment you Can edit the old one"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except MedicalEntry.DoesNotExist:
+            pass
         # Get the patient object from the request data
         if not request.data.get('code'):
             return Response({'error': "Medical Edit Code is Required"}, status=status.HTTP_406_NOT_ACCEPTABLE)
-        else:
+
             # Get the medical edit code from the request data
-            medical_edit_code = MedicalEditCode.objects.get(
-                patient=patient, code=request.data.get('code'))
+        medical_edit_code = MedicalEditCode.objects.get(
+            patient=patient, appointment=appointment, code=request.data.get('code'))
 
         # Check if the medical edit code is valid
         if not medical_edit_code.is_valid():
             return Response({'message': 'The medical edit code is expired or invalid'}, status=status.HTTP_400_BAD_REQUEST)
+
         req_data = {
             'comment': request.data.get('comment'),
             'prescription': request.data.get('prescription') if request.data.get('prescription') else None,
@@ -84,7 +84,7 @@ def medical_entry_create(request, patient_id, appointment_id):
             # Save the new MedicalEntry object
             with transaction.atomic():
                 # Save the new MedicalEntry object
-                medical_entry = serializer.save(
+                serializer.save(
                     doctor=request.user.doctor, patient=patient, appointment=appointment)
 
             # Return the serialized data for the new object
@@ -92,22 +92,32 @@ def medical_entry_create(request, patient_id, appointment_id):
         else:
             # Return the validation errors
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    except (Patient.DoesNotExist, MedicalEditCode.DoesNotExist, Appointment.DoesNotExist):
-        # Return a 404 error if the patient or medical edit code object doesn't exist
-        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    except Patient.DoesNotExist:
+        return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
+    except MedicalEditCode.DoesNotExist:
+        return Response({'error': 'Medical Edit Code not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Appointment.DoesNotExist:
+        return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['PUT'])
 @permission_classes([IsDoctor])
-def medical_entry_update(request, medical_entry_id, patient_id, code):
+def medical_entry_update(request, medical_entry_id, patient_id, appointment_id):
     try:
+        appointment = Appointment.objects.get(id=appointment_id)
+        if request.user.doctor != appointment.doctor:
+            return Response({'error': "Invaild Appointment id"}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Get the patient object from the request data
         patient = Patient.objects.get(id=patient_id)
 
+        if not request.data.get('code'):
+            return Response({'error': "Medical Edit Code is Required"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
         # Get the medical edit code from the request data
         medical_edit_code = MedicalEditCode.objects.get(
-            patient=patient, code=code)
+            patient=patient, appointment=appointment, code=request.data.get('code'))
 
         # Check if the medical edit code is valid
         if not medical_edit_code.is_valid():
@@ -118,17 +128,28 @@ def medical_entry_update(request, medical_entry_id, patient_id, code):
 
         if request.user.doctor != medical_entry.doctor:
             return Response({'message': 'You are not authorized to update this medical entry'}, status=status.HTTP_403_FORBIDDEN)
+        if appointment != medical_entry.appointment:
+            return Response({'message': 'You are can not update your old medical entry'}, status=status.HTTP_403_FORBIDDEN)
 
-        serializer = MedicalEntrySerializer(medical_entry, data=request.data)
+        req_data = {
+            'comment': request.data.get('comment') if request.data.get('comment') else medical_entry.comment,
+            'prescription': request.data.get('prescription') if request.data.get('prescription') else medical_entry.prescription,
+            'analysis_image': request.data.get('analysis_image') if request.data.get('analysis_image') else medical_entry.analysis_image,
+        }
+
+        serializer = MedicalEntrySerializer(medical_entry, data=req_data)
         if serializer.is_valid():
             # Save the updated MedicalEntry object
             with transaction.atomic():
-                updated_medical_entry = serializer.save()
+                serializer.save()
                 # Set the medical edit code status to 'expired'
 
                 # Return the serialized data for the updated object
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
-    except MedicalEntry.DoesNotExist:
-        # Return a 404 error if the MedicalEntry object doesn't exist
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    except Patient.DoesNotExist:
+        return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
+    except MedicalEditCode.DoesNotExist:
+        return Response({'error': 'Medical Edit Code not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Appointment.DoesNotExist:
+        return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
