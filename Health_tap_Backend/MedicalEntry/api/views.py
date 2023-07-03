@@ -67,7 +67,7 @@ def patient_medical_entry_list_doctor(request, patient_id, appointment_id):
         medical_entry = MedicalEntry.objects.get(
             patient=patient,  appointment=appointment)
         edit = True
-        medical_entry_serialized = MedicalEntrySerializer(appointment)
+        medical_entry_serialized = MedicalEntrySerializer(medical_entry)
     except MedicalEntry.DoesNotExist:
         edit = False
 
