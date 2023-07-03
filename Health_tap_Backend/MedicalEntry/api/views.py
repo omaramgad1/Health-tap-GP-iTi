@@ -64,10 +64,10 @@ def patient_medical_entry_list_doctor(request, patient_id, appointment_id):
 
     try:
 
-        MedicalEntry.objects.get(
+        medical_entry = MedicalEntry.objects.get(
             patient=patient,  appointment=appointment)
         edit = True
-        appointment_serialized = AppointmentSerializer(appointment)
+        medical_entry_serialized = MedicalEntrySerializer(appointment)
     except MedicalEntry.DoesNotExist:
         edit = False
 
@@ -89,7 +89,7 @@ def patient_medical_entry_list_doctor(request, patient_id, appointment_id):
                      'next': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.next_page_number()}' if objects.has_next() else None,
                      'previous': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.previous_page_number()}' if objects.has_previous() else None,
                      'count': queryset_len,
-                     "current_appointment": appointment_serialized if edit else None,
+                     "current_appointment": medical_entry_serialized.data if edit else None,
                      'previous_page': objects.previous_page_number() if objects.has_previous() else None,
                      'current_page': objects.number,
                      'next_page': objects.next_page_number() if objects.has_next() else None,
