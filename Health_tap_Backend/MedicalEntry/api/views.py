@@ -77,7 +77,7 @@ def patient_medical_entry_list_doctor(request, patient_id, appointment_id):
         patient=patient).order_by('created_at')
     queryset_len = MedicalEntry.objects.filter(
         patient=patient).order_by('created_at').count()
-    # limit = request.GET.get('limit', 10)
+    size = request.GET.get('size', 10)
     page = request.GET.get('page', 1)
 
     paginator = Paginator(queryset, 10)
@@ -85,8 +85,8 @@ def patient_medical_entry_list_doctor(request, patient_id, appointment_id):
     serializer = MedicalEntrySerializer(objects, many=True)
 
     return Response({'result': serializer.data,
-                     'next': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.next_page_number()}' if objects.has_next() else None,
-                     'previous': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'next': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.next_page_number()}&size={size}' if objects.has_next() else None,
+                     'previous': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.previous_page_number()}&size={size}' if objects.has_previous() else None,
                      'count': queryset_len,
                      "current_appointment": medical_entry_serialized.data if edit else None,
                      'previous_page': objects.previous_page_number() if objects.has_previous() else None,
