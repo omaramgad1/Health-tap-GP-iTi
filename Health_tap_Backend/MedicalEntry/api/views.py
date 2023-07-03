@@ -15,6 +15,7 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.paginator import Paginator
 from Health_tap_Backend.permissions import IsDoctor, IsPatient
+from Appointment.api.serializers import AppointmentSerializer
 
 
 @api_view(['GET'])
@@ -66,7 +67,7 @@ def patient_medical_entry_list_doctor(request, patient_id, appointment_id):
         MedicalEntry.objects.get(
             patient=patient,  appointment=appointment)
         edit = True
-
+        appointment_serialized = AppointmentSerializer(appointment)
     except MedicalEntry.DoesNotExist:
         edit = False
 
@@ -88,7 +89,7 @@ def patient_medical_entry_list_doctor(request, patient_id, appointment_id):
                      'next': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.next_page_number()}' if objects.has_next() else None,
                      'previous': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.previous_page_number()}' if objects.has_previous() else None,
                      'count': queryset_len,
-                     "edit": appointment if edit else None,
+                     "current_appointment": appointment_serialized if edit else None,
                      'previous_page': objects.previous_page_number() if objects.has_previous() else None,
                      'current_page': objects.number,
                      'next_page': objects.next_page_number() if objects.has_next() else None,
