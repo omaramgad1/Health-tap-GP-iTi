@@ -88,7 +88,7 @@ def patient_medical_entry_list_doctor(request, patient_id, appointment_id):
                      'next': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.next_page_number()}' if objects.has_next() else None,
                      'previous': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.previous_page_number()}' if objects.has_previous() else None,
                      'count': queryset_len,
-                     "edit": edit,
+                     "edit": appointment if edit else None,
                      'previous_page': objects.previous_page_number() if objects.has_previous() else None,
                      'current_page': objects.number,
                      'next_page': objects.next_page_number() if objects.has_next() else None,
