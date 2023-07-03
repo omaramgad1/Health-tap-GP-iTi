@@ -30,10 +30,10 @@ def patient_medical_entry_list(request):
         patient=patient).order_by('created_at')
     queryset_len = MedicalEntry.objects.filter(
         patient=patient).order_by('created_at').count()
-    # limit = request.GET.get('limit', 10)
+    limit = request.GET.get('limit', 10)
     page = request.GET.get('page', 1)
 
-    paginator = Paginator(queryset, 2)
+    paginator = Paginator(queryset, limit)
     objects = paginator.get_page(page)
     serializer = MedicalEntrySerializer(objects, many=True)
 
