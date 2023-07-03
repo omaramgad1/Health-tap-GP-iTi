@@ -61,15 +61,14 @@ def patient_medical_entry_list_doctor(request, patient_id, appointment_id):
     except Appointment.DoesNotExist:
         return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    edit = False
     try:
 
         MedicalEntry.objects.get(
             patient=patient,  appointment=appointment)
-        edit = False
+        edit = True
 
     except MedicalEntry.DoesNotExist:
-        edit = True
+        edit = False
 
     # Get the MedicalEntry objects for this patient
     base_url = request.scheme + '://' + request.get_host()
