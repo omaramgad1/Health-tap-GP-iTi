@@ -39,10 +39,9 @@ def patient_medical_entry_list(request):
     serializer = MedicalEntrySerializer(objects, many=True)
 
     return Response({'result': serializer.data,
-                     'next': f'{base_url}/patient/list/?page={objects.next_page_number()}' if objects.has_next() else None,
-                     'previous': f'{base_url}patient/list/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'next': f'{base_url}/patient/list/?page={objects.next_page_number()}&size={size}' if objects.has_next() else None,
+                     'previous': f'{base_url}patient/list/?page={objects.previous_page_number()}&size={size}' if objects.has_previous() else None,
                      'count': queryset_len,
-
                      'previous_page': objects.previous_page_number() if objects.has_previous() else None,
                      'current_page': objects.number,
                      'next_page': objects.next_page_number() if objects.has_next() else None,
