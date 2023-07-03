@@ -6,6 +6,7 @@ from Patient.models import Patient
 from .serializers import ReservationSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from django.db.models import F
 from rest_framework import status
 from Reservation.pagination import ReservedListPagination
 from Health_tap_Backend.permissions import IsDoctor, IsPatient
@@ -14,14 +15,8 @@ from Health_tap_Backend.permissions import IsDoctor, IsPatient
 @api_view(['GET'])
 @permission_classes([IsPatient])
 def list_all_reservation(request):
-    print('********************************')
-    print(request.user)
-    print('********************************')
-    # patient = get_object_or_404(Patient , user = request.user)
     patient = request.user.patient
-    print(patient)
-    print('********************************')
-    reservations = Reservation.objects.filter(patient=patient)
+    reservations = Reservation.objects.filter(patient=patient).order_by(F('appointment__date').desc(), F('appointment__start_time').desc())
     serializer = ReservationSerializer(reservations, many=True)
     return Response(serializer.data)
 
