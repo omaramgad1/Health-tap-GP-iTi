@@ -30,10 +30,10 @@ def patient_medical_entry_list(request):
         patient=patient).order_by('created_at')
     queryset_len = MedicalEntry.objects.filter(
         patient=patient).order_by('created_at').count()
-    limit = request.GET.get('limit', 10)
+    size = request.GET.get('size', 10)
     page = request.GET.get('page', 1)
 
-    paginator = Paginator(queryset, limit)
+    paginator = Paginator(queryset, size)
     objects = paginator.get_page(page)
     serializer = MedicalEntrySerializer(objects, many=True)
 
@@ -51,11 +51,25 @@ def patient_medical_entry_list(request):
 
 @api_view(['GET'])
 @permission_classes([IsDoctor])
-def patient_medical_entry_list_doctor(request, patient_id):
+def patient_medical_entry_list_doctor(request, patient_id, appointment_id):
     try:
         patient = Patient.objects.get(id=patient_id)
     except Patient.DoesNotExist:
         return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        appointment = Appointment.objects.get(id=appointment_id)
+    except Appointment.DoesNotExist:
+        return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    edit = False
+    try:
+
+        MedicalEntry.objects.get(
+            patient=patient,  appointment=appointment)
+        edit = False
+
+    except MedicalEntry.DoesNotExist:
+        edit = True
 
     # Get the MedicalEntry objects for this patient
     base_url = request.scheme + '://' + request.get_host()
@@ -75,7 +89,7 @@ def patient_medical_entry_list_doctor(request, patient_id):
                      'next': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.next_page_number()}' if objects.has_next() else None,
                      'previous': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.previous_page_number()}' if objects.has_previous() else None,
                      'count': queryset_len,
-
+                     "edit": edit,
                      'previous_page': objects.previous_page_number() if objects.has_previous() else None,
                      'current_page': objects.number,
                      'next_page': objects.next_page_number() if objects.has_next() else None,
@@ -89,7 +103,7 @@ def medical_entry_create(request, patient_id, appointment_id):
     try:
         appointment = Appointment.objects.get(id=appointment_id)
         print(appointment.doctor)
-        
+
         if request.user.doctor != appointment.doctor:
             return Response({'error': "Invaild Appointment id"}, status=status.HTTP_401_UNAUTHORIZED)
 

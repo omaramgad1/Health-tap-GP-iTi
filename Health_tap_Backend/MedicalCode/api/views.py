@@ -45,9 +45,7 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
                 return Response({'detail': 'The appointment is not reserved.'}, status=status.HTTP_400_BAD_REQUEST)
         except Appointment.DoesNotExist:
             return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-    
-       
+
         # if appointment.start_time is not now.now():
         #     return Response({'error': 'Appointment is not started'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -134,4 +132,4 @@ class PatientMedicalEntryListDoctorView(generics.GenericAPIView):
             return Response({'detail': 'Medical edit code has expired.'}, status=status.HTTP_400_BAD_REQUEST)
 
         base_url = request.scheme + '://' + request.get_host()
-        return redirect(f'{base_url}/medical-entry/doctor/patient/list/{patient_id}/')
+        return redirect(f'{base_url}/medical-entry/doctor/patient/list/{patient_id}/{appointment_id}/')
