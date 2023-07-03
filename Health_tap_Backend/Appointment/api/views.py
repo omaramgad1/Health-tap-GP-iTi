@@ -292,14 +292,20 @@ def get_reserved_appointments(request):
 @permission_classes([IsDoctor])
 def count_available_reserved_appointments(request):
 
-    today = timezone.localdate()
+    now = timezone.localtime()
+    tz = pytz.timezone('Africa/Cairo')
+    now = now.astimezone(tz)
+    today = now.date()
     max_date = today + timezone.timedelta(days=7)
+
     count_T_A = Appointment.objects.filter(
         doctor=request.user.doctor,
         date=today, status='A').count()
+
     count_T_R = Appointment.objects.filter(
         doctor=request.user.doctor,
         date=today, status='R').count()
+
     count_A = Appointment.objects.filter(
         doctor=request.user.doctor,
         date__range=[today, max_date], status='A').count()
