@@ -26,10 +26,12 @@ class Reservation(models.Model):
         verbose_name_plural = 'Reservations'
 
     def save(self, *args, **kwargs):
-        appointment_end_time = self.appointment.end_time()
         current_time = timezone.now().time()
+        current_date = timezone.now().date()
+        appointment_start_time = self.appointment.start_time
+        appointment_date = self.appointment.date
 
-        if current_time > appointment_end_time and self.status != 'D':
+        if current_date > appointment_date or (current_date == appointment_date and current_time >= appointment_start_time):
             self.status = 'D'
 
         super().save(*args, **kwargs)
