@@ -12,7 +12,7 @@ urlpatterns = [
          DoctorListBySpecializationView.as_view()),
     path('city/<int:city_id>/district/<int:district_id>/specialization/<int:specialization_id>/',
          DoctorListByCityDistrictSpecializationView.as_view()),
-    path('city/<int:city_id>/district/specialization/<int:specialization_id>/',
+    path('city/<int:city_id>/specialization/<int:specialization_id>/',
          DoctorListByCitySpecializationView.as_view()),
 
 
