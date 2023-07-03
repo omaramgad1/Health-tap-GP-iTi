@@ -33,7 +33,7 @@ def patient_medical_entry_list(request):
     # limit = request.GET.get('limit', 10)
     page = request.GET.get('page', 1)
 
-    paginator = Paginator(queryset, 10)
+    paginator = Paginator(queryset, 2)
     objects = paginator.get_page(page)
     serializer = MedicalEntrySerializer(objects, many=True)
 
@@ -88,6 +88,8 @@ def patient_medical_entry_list_doctor(request, patient_id):
 def medical_entry_create(request, patient_id, appointment_id):
     try:
         appointment = Appointment.objects.get(id=appointment_id)
+        print(appointment.doctor)
+        
         if request.user.doctor != appointment.doctor:
             return Response({'error': "Invaild Appointment id"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -195,7 +197,6 @@ def medical_entry_update(request, medical_entry_id, patient_id, appointment_id):
 
 class PatientMedicalEntryList(generics.ListAPIView):
     serializer_class = MedicalEntrySerializer
-    permission_classes = [IsPatient]
     pagination_class = EntriesPagination
     filter_backends = [DjangoFilterBackend]
     search_fields = ['doctor__specialization__name', 'doctor__id']
@@ -208,7 +209,7 @@ class PatientMedicalEntryList(generics.ListAPIView):
         specialization_term = self.request.query_params.get('specialization')
         if specialization_term:
             queryset = queryset.filter(
-                doctor__specialization__name__contains=specialization_term)
+                doctor__specialization=specialization_term)
 
         doctor_id_term = self.request.query_params.get('doctor_id')
         if doctor_id_term:

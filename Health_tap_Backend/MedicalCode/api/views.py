@@ -45,7 +45,9 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
                 return Response({'detail': 'The appointment is not reserved.'}, status=status.HTTP_400_BAD_REQUEST)
         except Appointment.DoesNotExist:
             return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
-
+        
+    
+       
         # if appointment.start_time is not now.now():
         #     return Response({'error': 'Appointment is not started'}, status=status.HTTP_400_BAD_REQUEST)
 
