@@ -26,7 +26,7 @@ class MedicalEditCode(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.created_at = timezone.now()
-            self.expired_at = self.created_at + timezone.timedelta(hours=1)
+            self.expired_at = self.created_at + timezone.timedelta(minutes=2)
             self.status = 'V'
             print(f'Saving new instance with status {self.status}')
         if timezone.now() >= self.expired_at:

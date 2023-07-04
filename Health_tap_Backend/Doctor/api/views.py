@@ -1,4 +1,4 @@
-from .serializers import DoctorRegistrationSerializer
+from .serializers import DoctorRegistrationSerializer , DoctorSerializer
 from rest_framework import status ,generics
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -127,3 +127,9 @@ class DoctorListByCityDistrictSpecializationView(generics.ListAPIView):
             queryset = queryset.filter(specialization__id=specialization_id)
 
         return queryset
+
+
+class DoctorRetrieveView(generics.RetrieveAPIView):
+    queryset = Doctor.objects.all()
+    serializer_class = DoctorSerializer
+    lookup_field = 'id'

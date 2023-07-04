@@ -30,49 +30,43 @@ class MedicalEditCodeListCreateView(generics.ListCreateAPIView):
         return MedicalEditCode.objects.none()
 
     def post(self, request, *args, **kwargs):
-        # if not hasattr(request.user, 'patient'):
-        #     return Response({'detail': 'You are not authorized to create a medical edit code.'}, status=status.HTTP_400_BAD_REQUEST)
         now = timezone.localtime()
         tz = pytz.timezone('Africa/Cairo')
         now = now.astimezone(tz)
         now.now()
-        # current_date = now.date()
         patient = request.user.patient
         appointment_id = self.kwargs['appointment_id']
+        print(appointment_id)
         try:
             appointment = Appointment.objects.get(id=appointment_id)
             if appointment.status != 'R':
                 return Response({'detail': 'The appointment is not reserved.'}, status=status.HTTP_400_BAD_REQUEST)
         except Appointment.DoesNotExist:
             return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        existing_code = MedicalEditCode.objects.filter(
+            patient=patient, expired_at__gt=now).first()
+        if existing_code:
+            if existing_code.appointment == appointment:
+                serializer = self.get_serializer(existing_code)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                error_msg = 'A medical code for another appointment already exists and has not yet expired.'
+                return Response({'detail': error_msg}, status=status.HTTP_400_BAD_REQUEST)
+        if existing_code and existing_code.expired_at <= now:
+            existing_code.delete()
         
-    
-       
-        # if appointment.start_time is not now.now():
-        #     return Response({'error': 'Appointment is not started'}, status=status.HTTP_400_BAD_REQUEST)
+        code = ''.join(random.choices(
+            string.ascii_uppercase + string.digits, k=10))
 
-        try:
-            medical_edit_code = MedicalEditCode.objects.get(
-                patient=patient, appointment=appointment)
-            MedicalEditCode.objects.filter(
-                patient=patient).exclude(patient=patient, appointment=appointment).delete()
-            serializer = self.get_serializer(medical_edit_code)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except MedicalEditCode.DoesNotExist:
-            MedicalEditCode.objects.filter(
-                patient=patient).delete()
-
-            code = ''.join(random.choices(
-                string.ascii_uppercase + string.digits, k=10))
-
-            validated_data = {
-                'patient': patient,
-                'appointment': appointment,
-                'code': code,
-                'created_at': now.now(),
-                'expired_at': now.now() + timezone.timedelta(hours=1),
-                'status': 'V',
-            }
+        validated_data = {
+            'patient': patient,
+            'appointment': appointment,
+            'code': code,
+            'created_at': now.now(),
+            'expired_at': now.now() + timezone.timedelta(minutes=1),
+            'status': 'V',
+        }
 
         try:
             medical_edit_code = MedicalEditCode.objects.create(
