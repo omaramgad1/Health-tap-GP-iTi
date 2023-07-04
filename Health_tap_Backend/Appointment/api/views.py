@@ -189,8 +189,8 @@ def list_reserved_appointments(request):
     serializer = AppointmentSerializer(objects, many=True)
 
     return Response({'result': serializer.data,
-                     'next': f'{base_url}/appointment/doctor/list-all/?page={objects.next_page_number()}' if objects.has_next() else None,
-                     'previous': f'{base_url}/appointment/doctor/list-all/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'next': f'{base_url}/appointment/doctor/list/reserved/?page={objects.next_page_number()}' if objects.has_next() else None,
+                     'previous': f'{base_url}/appointment/doctor/list/reserved/?page={objects.previous_page_number()}' if objects.has_previous() else None,
                      'count': queryset_len,
 
                      'previous_page': objects.previous_page_number() if objects.has_previous() else None,
