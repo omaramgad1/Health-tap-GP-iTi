@@ -115,20 +115,20 @@ def medical_entry_create(request, patient_id, appointment_id):
         except MedicalEntry.DoesNotExist:
             pass
         # Get the patient object from the request data
-        if not request.data.get('code').trim():
+        if not request.data.get('code'):
             return Response({'error': "Medical Edit Code is Required"}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
             # Get the medical edit code from the request data
         medical_edit_code = MedicalEditCode.objects.get(
-            patient=patient, appointment=appointment, code=request.data.get('code').trim())
+            patient=patient, appointment=appointment, code=request.data.get('code'))
 
         # Check if the medical edit code is valid
         if not medical_edit_code.is_valid():
             return Response({'message': 'The medical edit code is expired or invalid'}, status=status.HTTP_400_BAD_REQUEST)
 
         req_data = {
-            'comment': request.data.get('comment').trim(),
-            'prescription': request.data.get('prescription').trim() if request.data.get('prescription').trim() else None,
+            'comment': request.data.get('comment'),
+            'prescription': request.data.get('prescription') if request.data.get('prescription') else None,
             'analysis_image': request.data.get('analysis_image') if request.data.get('analysis_image') else None,
         }
 
@@ -166,12 +166,12 @@ def medical_entry_update(request, medical_entry_id, patient_id, appointment_id):
         # Get the patient object from the request data
         patient = Patient.objects.get(id=patient_id)
 
-        if not request.data.get('code').trim():
+        if not request.data.get('code'):
             return Response({'error': "Medical Edit Code is Required"}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # Get the medical edit code from the request data
         medical_edit_code = MedicalEditCode.objects.get(
-            patient=patient, appointment=appointment, code=request.data.get('code').trim())
+            patient=patient, appointment=appointment, code=request.data.get('code'))
 
         # Check if the medical edit code is valid
         if not medical_edit_code.is_valid():
@@ -186,8 +186,8 @@ def medical_entry_update(request, medical_entry_id, patient_id, appointment_id):
             return Response({'message': 'You can not update this medical entry'}, status=status.HTTP_403_FORBIDDEN)
 
         req_data = {
-            'comment': request.data.get('comment').trim() if request.data.get('comment').trim() else medical_entry.comment,
-            'prescription': request.data.get('prescription') if request.data.get('prescription').trim() else medical_entry.prescription,
+            'comment': request.data.get('comment') if request.data.get('comment') else medical_entry.comment,
+            'prescription': request.data.get('prescription') if request.data.get('prescription') else medical_entry.prescription,
             'analysis_image': request.data.get('analysis_image') if request.data.get('analysis_image') else medical_entry.analysis_image,
         }
 
