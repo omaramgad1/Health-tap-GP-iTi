@@ -330,28 +330,28 @@ def list_doctor_appointments_by_date(request, date):
         doctor=doctor,
         date=date
     ).order_by('start_time')
-    queryset_len = Appointment.objects.filter(
-        doctor=doctor,
-        date=date.trim()
-    ).count()
+    # queryset_len = Appointment.objects.filter(
+    #     doctor=doctor,
+    #     date=date.trim()
+    # ).count()
 
-    # limit = request.GET.get('limit', 10)
-    page = request.GET.get('page', 1)
+    # # limit = request.GET.get('limit', 10)
+    # page = request.GET.get('page', 1)
 
-    paginator = Paginator(queryset, 10)
-    objects = paginator.get_page(page)
-    serializer = AppointmentSerializer(objects, many=True)
+    # paginator = Paginator(queryset, 10)
+    # objects = paginator.get_page(page)
+    serializer = AppointmentSerializer(queryset, many=True)
 
-    return Response({'result': serializer.data,
-                     'next': f'{base_url}/appointment/doctor/list/date/{date.trim()}/?page={objects.next_page_number()}' if objects.has_next() else None,
-                     'previous': f'{base_url}/appointment/doctor/list/date/{date.trim()}/?page={objects.previous_page_number()}' if objects.has_previous() else None,
-                     'count': queryset_len,
+    return Response({'result': serializer.data})
+    #  'next': f'{base_url}/appointment/doctor/list/date/{date.trim()}/?page={objects.next_page_number()}' if objects.has_next() else None,
+    #  'previous': f'{base_url}/appointment/doctor/list/date/{date.trim()}/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+    #  'count': queryset_len,
 
-                     'previous_page': objects.previous_page_number() if objects.has_previous() else None,
-                     'current_page': objects.number,
-                     'next_page': objects.next_page_number() if objects.has_next() else None,
-                     'total_pages': paginator.num_pages,
-                     })
+    #  'previous_page': objects.previous_page_number() if objects.has_previous() else None,
+    #  'current_page': objects.number,
+    #  'next_page': objects.next_page_number() if objects.has_next() else None,
+    #  'total_pages': paginator.num_pages,
+    #  })
 
 ############################## Patient #####################
 
