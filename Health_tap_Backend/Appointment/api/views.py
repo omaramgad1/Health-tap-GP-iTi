@@ -38,7 +38,8 @@ def list_doctor_appointments(request):
 
     base_url = request.scheme + '://' + request.get_host()
 
-    queryset = doctor.appointments.filter(date__gte=current_date)
+    queryset = doctor.appointments.filter(
+        date__gte=current_date).order_by('date', 'start_time')
     queryset_len = doctor.appointments.filter(date__gte=current_date).count()
     # limit = request.GET.get('limit', 10)
     page = request.GET.get('page', 1)
@@ -140,7 +141,7 @@ def list_available_appointments(request):
 
     queryset = Appointment.objects.filter(
         doctor=request.user.doctor,
-        date__range=[today, max_date], status='A')
+        date__range=[today, max_date], status='A').order_by('date', 'start_time')
     queryset_len = Appointment.objects.filter(
         doctor=request.user.doctor,
         date__range=[today, max_date], status='A').count()
@@ -177,7 +178,7 @@ def list_reserved_appointments(request):
 
     queryset = Appointment.objects.filter(
         doctor=request.user.doctor,
-        date__range=[today, max_date], status='R')
+        date__range=[today, max_date], status='R').order_by('date', 'start_time')
     queryset_len = Appointment.objects.filter(
         date__range=[today, max_date], status='R').count()
     # limit = request.GET.get('limit', 10)
@@ -217,7 +218,7 @@ def get_available_appointments(request):
         doctor=doctor,
         date=now.date(),
         status='A',
-    )
+    ).order_by('date', 'start_time')
     queryset_len = Appointment.objects.filter(
         doctor=doctor,
         date=now.date(),
@@ -263,7 +264,7 @@ def get_reserved_appointments(request):
         doctor=doctor,
         date=now.date(),
         status='R',
-    )
+    ).order_by('date', 'start_time')
     queryset_len = Appointment.objects.filter(
         doctor=doctor,
         date=now.date(),
@@ -328,10 +329,10 @@ def list_doctor_appointments_by_date(request, date):
     queryset = Appointment.objects.filter(
         doctor=doctor,
         date=date
-    )
+    ).order_by('start_time')
     queryset_len = Appointment.objects.filter(
         doctor=doctor,
-        date=date
+        date=date.trim()
     ).count()
 
     # limit = request.GET.get('limit', 10)
@@ -342,8 +343,8 @@ def list_doctor_appointments_by_date(request, date):
     serializer = AppointmentSerializer(objects, many=True)
 
     return Response({'result': serializer.data,
-                     'next': f'{base_url}/appointment/doctor/list-all/?page={objects.next_page_number()}' if objects.has_next() else None,
-                     'previous': f'{base_url}/appointment/doctor/list-all/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'next': f'{base_url}/appointment/doctor/list/date/{date.trim()}/?page={objects.next_page_number()}' if objects.has_next() else None,
+                     'previous': f'{base_url}/appointment/doctor/list/date/{date.trim()}/?page={objects.previous_page_number()}' if objects.has_previous() else None,
                      'count': queryset_len,
 
                      'previous_page': objects.previous_page_number() if objects.has_previous() else None,
@@ -378,7 +379,7 @@ def get_available_appointments_patient(request, doctor_id):
     queryset = Appointment.objects.filter(
         doctor=doctor,
         date__range=[today, max_date], status='A'
-    )
+    ).order_by('date', 'start_time')
     queryset_len = Appointment.objects.filter(
         doctor=doctor,
         date__range=[today, max_date], status='A'
@@ -416,7 +417,7 @@ def list_doctor_appointments_by_date_pateint(request, doctor_id, date):
     queryset = Appointment.objects.filter(
         doctor=doctor,
         date=date
-    )
+    ).order_by('start_time')
     queryset_len = Appointment.objects.filter(
         doctor=doctor,
         date=date
