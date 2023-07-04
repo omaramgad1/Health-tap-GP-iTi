@@ -15,6 +15,7 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.paginator import Paginator
 from Health_tap_Backend.permissions import IsDoctor, IsPatient
+from Appointment.api.serializers import AppointmentSerializer
 
 
 @api_view(['GET'])
@@ -30,18 +31,17 @@ def patient_medical_entry_list(request):
         patient=patient).order_by('created_at')
     queryset_len = MedicalEntry.objects.filter(
         patient=patient).order_by('created_at').count()
-    limit = request.GET.get('limit', 10)
+    size = request.GET.get('size', 10)
     page = request.GET.get('page', 1)
 
-    paginator = Paginator(queryset, limit)
+    paginator = Paginator(queryset, size)
     objects = paginator.get_page(page)
     serializer = MedicalEntrySerializer(objects, many=True)
 
     return Response({'result': serializer.data,
-                     'next': f'{base_url}/patient/list/?page={objects.next_page_number()}' if objects.has_next() else None,
-                     'previous': f'{base_url}patient/list/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'next': f'{base_url}/patient/list/?page={objects.next_page_number()}&size={size}' if objects.has_next() else None,
+                     'previous': f'{base_url}patient/list/?page={objects.previous_page_number()}&size={size}' if objects.has_previous() else None,
                      'count': queryset_len,
-
                      'previous_page': objects.previous_page_number() if objects.has_previous() else None,
                      'current_page': objects.number,
                      'next_page': objects.next_page_number() if objects.has_next() else None,
@@ -51,11 +51,24 @@ def patient_medical_entry_list(request):
 
 @api_view(['GET'])
 @permission_classes([IsDoctor])
-def patient_medical_entry_list_doctor(request, patient_id):
+def patient_medical_entry_list_doctor(request, patient_id, appointment_id):
     try:
         patient = Patient.objects.get(id=patient_id)
     except Patient.DoesNotExist:
         return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        appointment = Appointment.objects.get(id=appointment_id)
+    except Appointment.DoesNotExist:
+        return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+
+        medical_entry = MedicalEntry.objects.get(
+            patient=patient,  appointment=appointment)
+        edit = True
+        medical_entry_serialized = MedicalEntrySerializer(medical_entry)
+    except MedicalEntry.DoesNotExist:
+        edit = False
 
     # Get the MedicalEntry objects for this patient
     base_url = request.scheme + '://' + request.get_host()
@@ -64,18 +77,19 @@ def patient_medical_entry_list_doctor(request, patient_id):
         patient=patient).order_by('created_at')
     queryset_len = MedicalEntry.objects.filter(
         patient=patient).order_by('created_at').count()
-    # limit = request.GET.get('limit', 10)
+
+    size = request.GET.get('size', 10)
     page = request.GET.get('page', 1)
 
-    paginator = Paginator(queryset, 10)
+    paginator = Paginator(queryset, size)
     objects = paginator.get_page(page)
     serializer = MedicalEntrySerializer(objects, many=True)
 
     return Response({'result': serializer.data,
-                     'next': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.next_page_number()}' if objects.has_next() else None,
-                     'previous': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.previous_page_number()}' if objects.has_previous() else None,
+                     'next': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.next_page_number()}&size={size}' if objects.has_next() else None,
+                     'previous': f'{base_url}/doctor/patient/list/{patient_id}/?page={objects.previous_page_number()}&size={size}' if objects.has_previous() else None,
                      'count': queryset_len,
-
+                     "current_appointment": medical_entry_serialized.data if edit else None,
                      'previous_page': objects.previous_page_number() if objects.has_previous() else None,
                      'current_page': objects.number,
                      'next_page': objects.next_page_number() if objects.has_next() else None,
@@ -89,7 +103,7 @@ def medical_entry_create(request, patient_id, appointment_id):
     try:
         appointment = Appointment.objects.get(id=appointment_id)
         print(appointment.doctor)
-        
+
         if request.user.doctor != appointment.doctor:
             return Response({'error': "Invaild Appointment id"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -101,20 +115,20 @@ def medical_entry_create(request, patient_id, appointment_id):
         except MedicalEntry.DoesNotExist:
             pass
         # Get the patient object from the request data
-        if not request.data.get('code'):
+        if not request.data.get('code').trim():
             return Response({'error': "Medical Edit Code is Required"}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
             # Get the medical edit code from the request data
         medical_edit_code = MedicalEditCode.objects.get(
-            patient=patient, appointment=appointment, code=request.data.get('code'))
+            patient=patient, appointment=appointment, code=request.data.get('code').trim())
 
         # Check if the medical edit code is valid
         if not medical_edit_code.is_valid():
             return Response({'message': 'The medical edit code is expired or invalid'}, status=status.HTTP_400_BAD_REQUEST)
 
         req_data = {
-            'comment': request.data.get('comment'),
-            'prescription': request.data.get('prescription') if request.data.get('prescription') else None,
+            'comment': request.data.get('comment').trim(),
+            'prescription': request.data.get('prescription').trim() if request.data.get('prescription').trim() else None,
             'analysis_image': request.data.get('analysis_image') if request.data.get('analysis_image') else None,
         }
 
@@ -152,12 +166,12 @@ def medical_entry_update(request, medical_entry_id, patient_id, appointment_id):
         # Get the patient object from the request data
         patient = Patient.objects.get(id=patient_id)
 
-        if not request.data.get('code'):
+        if not request.data.get('code').trim():
             return Response({'error': "Medical Edit Code is Required"}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # Get the medical edit code from the request data
         medical_edit_code = MedicalEditCode.objects.get(
-            patient=patient, appointment=appointment, code=request.data.get('code'))
+            patient=patient, appointment=appointment, code=request.data.get('code').trim())
 
         # Check if the medical edit code is valid
         if not medical_edit_code.is_valid():
@@ -172,8 +186,8 @@ def medical_entry_update(request, medical_entry_id, patient_id, appointment_id):
             return Response({'message': 'You can not update this medical entry'}, status=status.HTTP_403_FORBIDDEN)
 
         req_data = {
-            'comment': request.data.get('comment') if request.data.get('comment') else medical_entry.comment,
-            'prescription': request.data.get('prescription') if request.data.get('prescription') else medical_entry.prescription,
+            'comment': request.data.get('comment').trim() if request.data.get('comment').trim() else medical_entry.comment,
+            'prescription': request.data.get('prescription') if request.data.get('prescription').trim() else medical_entry.prescription,
             'analysis_image': request.data.get('analysis_image') if request.data.get('analysis_image') else medical_entry.analysis_image,
         }
 

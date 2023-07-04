@@ -126,6 +126,7 @@ class PatientMedicalEntryListDoctorView(generics.GenericAPIView):
 
         if medical_edit_code.status == 'E' or dt.now().date() > medical_edit_code.expired_at.date():
             return Response({'detail': 'Medical edit code has expired.'}, status=status.HTTP_400_BAD_REQUEST)
-
+        size = request.GET.get('size', 10)
+        page = request.GET.get('page', 1)
         base_url = request.scheme + '://' + request.get_host()
-        return redirect(f'{base_url}/medical-entry/doctor/patient/list/{patient_id}/')
+        return redirect(f'{base_url}/medical-entry/doctor/patient/list/{patient_id}/{appointment_id}/?page={page}&size={size}')

@@ -6,7 +6,7 @@ urlpatterns = [
          name='patient_medical_entries'),
 
 
-    path('doctor/patient/list/<int:patient_id>/', patient_medical_entry_list_doctor,
+    path('doctor/patient/list/<int:patient_id>/<int:appointment_id>/', patient_medical_entry_list_doctor,
          name='patient_medical_entry_list_doctor'),
 
     path('doctor/create/patient/<int:patient_id>/appointment/<int:appointment_id>/', medical_entry_create,

@@ -6,6 +6,7 @@ from Patient.models import Patient
 from .serializers import ReservationSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from django.db.models import F
 from rest_framework import status
 from Reservation.pagination import ReservedListPagination
 from Health_tap_Backend.permissions import IsDoctor, IsPatient
@@ -14,14 +15,8 @@ from Health_tap_Backend.permissions import IsDoctor, IsPatient
 @api_view(['GET'])
 @permission_classes([IsPatient])
 def list_all_reservation(request):
-    print('********************************')
-    print(request.user)
-    print('********************************')
-    # patient = get_object_or_404(Patient , user = request.user)
     patient = request.user.patient
-    print(patient)
-    print('********************************')
-    reservations = Reservation.objects.filter(patient=patient)
+    reservations = Reservation.objects.filter(patient=patient).order_by(F('appointment__date').desc(), F('appointment__start_time').desc())
     serializer = ReservationSerializer(reservations, many=True)
     return Response(serializer.data)
 
@@ -89,7 +84,19 @@ def create_reservation(request, appointment_pk):
     patient = request.user.patient
     appointment = get_object_or_404(Appointment, pk=appointment_pk, status='A')
 
-    # Update the appointment status to 'R'
+    # Check if the patient has any existing reservations that have the same duration and overlapping time slots
+    existing_reservations = Reservation.objects.filter(
+        patient=patient,
+        appointment__start_time__lt=appointment.end_time(),
+        # appointment__end_time__gt=appointment.start_time,
+        # appointment__duration=appointment.duration
+        appointment__date=appointment.date
+    )
+    for e in existing_reservations: 
+        if e.appointment.end_time() > appointment.start_time :
+           return Response({'detail': 'Cannot reserve multiple appointments with the same duration and overlapping time slots'}, status=status.HTTP_400_BAD_REQUEST) 
+        
+
     appointment.status = 'R'
     appointment.save()
 

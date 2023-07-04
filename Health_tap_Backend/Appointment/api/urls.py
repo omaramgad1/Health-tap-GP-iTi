@@ -38,6 +38,8 @@ urlpatterns = [
     ###################### Patient #####################
     path('patient/doctor/<int:doctor_id>/available/',
          get_available_appointments_patient, name='get_available_appointments_patient'),
+    path('patient/doctor/<int:doctor_id>/list-all/available/',
+         get_available_appointments_patient_without_pagination, name='get_available_appointments_patient_without_pagination'),
 
 
     path('patient/list/date/<slug:date>/',
